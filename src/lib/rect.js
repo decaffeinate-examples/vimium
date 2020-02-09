@@ -1,3 +1,13 @@
+/* eslint-disable
+    max-len,
+    no-nested-ternary,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-undef,
+    no-var,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -14,7 +24,7 @@ var Rect = {
       left: x1,
       right: x2,
       width: x2 - x1,
-      height: y2 - y1
+      height: y2 - y1,
     };
   },
 
@@ -25,7 +35,7 @@ var Rect = {
       left: rect.left,
       right: rect.right,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     };
   },
 
@@ -39,7 +49,7 @@ var Rect = {
       left: rect.left + x,
       right: rect.right + x,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     };
   },
 
@@ -50,7 +60,7 @@ var Rect = {
       Math.max(rect1.left, rect2.left),
       Math.max(rect1.top, rect2.top),
       Math.min(rect1.right, rect2.right),
-      Math.min(rect1.bottom, rect2.bottom)
+      Math.min(rect1.bottom, rect2.bottom),
     );
 
     // If bounding rect2 has made the width or height negative, rect1 does not contain rect2.
@@ -79,28 +89,28 @@ var Rect = {
       // Bottom row.
       this.create(rect1.left, rect2.bottom, rect2.left, rect1.bottom),
       this.create(rect2.left, rect2.bottom, rect2.right, rect1.bottom),
-      this.create(rect2.right, rect2.bottom, rect1.right, rect1.bottom)
+      this.create(rect2.right, rect2.bottom, rect1.right, rect1.bottom),
     ];
 
-    return rects.filter(rect => (rect.height > 0) && (rect.width > 0));
+    return rects.filter((rect) => (rect.height > 0) && (rect.width > 0));
   },
 
   // Determine whether two rects overlap.
   intersects(rect1, rect2) {
-    return (rect1.right > rect2.left) &&
-    (rect1.left < rect2.right) &&
-    (rect1.bottom > rect2.top) &&
-    (rect1.top < rect2.bottom);
+    return (rect1.right > rect2.left)
+    && (rect1.left < rect2.right)
+    && (rect1.bottom > rect2.top)
+    && (rect1.top < rect2.bottom);
   },
 
   // Determine whether two rects overlap, including 0-width intersections at borders.
   intersectsStrict(rect1, rect2) {
-    return (rect1.right >= rect2.left) && (rect1.left <= rect2.right) &&
-    (rect1.bottom >= rect2.top) && (rect1.top <= rect2.bottom);
+    return (rect1.right >= rect2.left) && (rect1.left <= rect2.right)
+    && (rect1.bottom >= rect2.top) && (rect1.top <= rect2.bottom);
   },
 
   equals(rect1, rect2) {
-    for (let property of ["top", "bottom", "left", "right", "width", "height"]) {
+    for (const property of ['top', 'bottom', 'left', 'right', 'width', 'height']) {
       if (rect1[property] !== rect2[property]) { return false; }
     }
     return true;
@@ -108,8 +118,8 @@ var Rect = {
 
   intersect(rect1, rect2) {
     return this.create((Math.max(rect1.left, rect2.left)), (Math.max(rect1.top, rect2.top)),
-        (Math.min(rect1.right, rect2.right)), (Math.min(rect1.bottom, rect2.bottom)));
-  }
+      (Math.min(rect1.right, rect2.right)), (Math.min(rect1.bottom, rect2.bottom)));
+  },
 };
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));

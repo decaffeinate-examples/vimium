@@ -1,3 +1,15 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-nested-ternary,
+    no-param-reassign,
+    no-return-assign,
+    no-shadow,
+    no-undef,
+    no-unused-vars,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,7 +21,7 @@
 // most recent first.
 const FindModeHistory = {
   storage: (typeof chrome !== 'undefined' && chrome !== null ? chrome.storage.local : undefined), // Guard against chrome being undefined (in the HUD iframe).
-  key: "findModeRawQueryList",
+  key: 'findModeRawQueryList',
   max: 50,
   rawQueryList: null,
 
@@ -20,16 +32,16 @@ const FindModeHistory = {
 
     if (!this.rawQueryList) {
       this.rawQueryList = []; // Prevent repeated initialization.
-      if (this.isIncognitoMode) { this.key = "findModeRawQueryListIncognito"; }
-      this.storage.get(this.key, items => {
+      if (this.isIncognitoMode) { this.key = 'findModeRawQueryListIncognito'; }
+      this.storage.get(this.key, (items) => {
         if (!chrome.runtime.lastError) {
           if (items[this.key]) { this.rawQueryList = items[this.key]; }
           if (this.isIncognitoMode && !items[this.key]) {
             // This is the first incognito tab, so we need to initialize the incognito-mode query history.
-            return this.storage.get("findModeRawQueryList", items => {
+            return this.storage.get('findModeRawQueryList', (items) => {
               if (!chrome.runtime.lastError) {
                 this.rawQueryList = items.findModeRawQueryList;
-                return this.storage.set({findModeRawQueryListIncognito: this.rawQueryList});
+                return this.storage.set({ findModeRawQueryListIncognito: this.rawQueryList });
               }
             });
           }
@@ -39,25 +51,24 @@ const FindModeHistory = {
 
     return chrome.storage.onChanged.addListener((changes, area) => {
       if (changes[this.key]) { return this.rawQueryList = changes[this.key].newValue; }
-  });
+    });
   },
 
   getQuery(index) {
     if (index == null) { index = 0; }
-    return this.rawQueryList[index] || "";
+    return this.rawQueryList[index] || '';
   },
 
   saveQuery(query) {
-    if (0 < query.length) {
+    if (query.length > 0) {
       this.rawQueryList = this.refreshRawQueryList(query, this.rawQueryList);
       const newSetting = {}; newSetting[this.key] = this.rawQueryList;
       this.storage.set(newSetting);
       // If there are any active incognito-mode tabs, then propagte this query to those tabs too.
       if (!this.isIncognitoMode) {
-        return this.storage.get("findModeRawQueryListIncognito", items => {
+        return this.storage.get('findModeRawQueryListIncognito', (items) => {
           if (!chrome.runtime.lastError && items.findModeRawQueryListIncognito) {
-            return this.storage.set({
-              findModeRawQueryListIncognito: this.refreshRawQueryList(query, items.findModeRawQueryListIncognito)});
+            return this.storage.set({ findModeRawQueryListIncognito: this.refreshRawQueryList(query, items.findModeRawQueryListIncognito) });
           }
         });
       }
@@ -65,8 +76,8 @@ const FindModeHistory = {
   },
 
   refreshRawQueryList(query, rawQueryList) {
-    return ([ query ].concat(rawQueryList.filter(q => q !== query))).slice(0, +this.max + 1 || undefined);
-  }
+    return ([query].concat(rawQueryList.filter((q) => q !== query))).slice(0, +this.max + 1 || undefined);
+  },
 };
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));

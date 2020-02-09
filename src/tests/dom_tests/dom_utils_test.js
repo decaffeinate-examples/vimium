@@ -1,47 +1,53 @@
+/* eslint-disable
+    no-multi-str,
+    no-return-assign,
+    no-undef,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-context("DOM content loaded",
+context('DOM content loaded',
 
   // The DOM content has already loaded, this should be called immediately.
-  should("call callback immediately.", function() {
+  should('call callback immediately.', () => {
     let called = false;
     DomUtils.documentReady(() => called = true);
     return assert.isTrue(called);
   }),
 
   // See ./dom_tests.html; the callback there was installed before the document was ready.
-  should("already have called callback embedded in test page.", () => assert.isTrue((window.documentReadyListenerCalled != null) && window.documentReadyListenerCalled))
-);
+  should('already have called callback embedded in test page.', () => assert.isTrue((window.documentReadyListenerCalled != null) && window.documentReadyListenerCalled)));
 
-context("Check visibility",
+context('Check visibility',
 
-  should("detect visible elements as visible", function() {
-    document.getElementById("test-div").innerHTML = `\
-<div id='foo'>test</div>\
-`;
+  should('detect visible elements as visible', () => {
+    document.getElementById('test-div').innerHTML = '\
+<div id=\'foo\'>test</div>\
+';
     return assert.isTrue((DomUtils.getVisibleClientRect((document.getElementById('foo')), true)) !== null);
   }),
 
-  should("detect display:none links as hidden", function() {
-    document.getElementById("test-div").innerHTML = `\
-<a id='foo' style='display:none'>test</a>\
-`;
+  should('detect display:none links as hidden', () => {
+    document.getElementById('test-div').innerHTML = '\
+<a id=\'foo\' style=\'display:none\'>test</a>\
+';
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('foo')), true)));
   }),
 
-  should("detect visibility:hidden links as hidden", function() {
-    document.getElementById("test-div").innerHTML = `\
-<a id='foo' style='visibility:hidden'>test</a>\
-`;
+  should('detect visibility:hidden links as hidden', () => {
+    document.getElementById('test-div').innerHTML = '\
+<a id=\'foo\' style=\'visibility:hidden\'>test</a>\
+';
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('foo')), true)));
   }),
 
-  should("detect elements nested in display:none elements as hidden", function() {
-    document.getElementById("test-div").innerHTML = `\
+  should('detect elements nested in display:none elements as hidden', () => {
+    document.getElementById('test-div').innerHTML = `\
 <div style='display:none'>
   <a id='foo'>test</a>
 </div>\
@@ -49,8 +55,8 @@ context("Check visibility",
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('foo')), true)));
   }),
 
-  should("detect links nested in visibility:hidden elements as hidden", function() {
-    document.getElementById("test-div").innerHTML = `\
+  should('detect links nested in visibility:hidden elements as hidden', () => {
+    document.getElementById('test-div').innerHTML = `\
 <div style='visibility:hidden'>
   <a id='foo'>test</a>
 </div>\
@@ -58,8 +64,8 @@ context("Check visibility",
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('foo')), true)));
   }),
 
-  should("detect links outside viewport as hidden", function() {
-    document.getElementById("test-div").innerHTML = `\
+  should('detect links outside viewport as hidden', () => {
+    document.getElementById('test-div').innerHTML = `\
 <a id='foo' style='position:absolute;top:-2000px'>test</a>
 <a id='bar' style='position:absolute;left:2000px'>test</a>\
 `;
@@ -67,8 +73,8 @@ context("Check visibility",
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('bar')), true)));
   }),
 
-  should("detect links only partially outside viewport as visible", function() {
-    document.getElementById("test-div").innerHTML = `\
+  should('detect links only partially outside viewport as visible', () => {
+    document.getElementById('test-div').innerHTML = `\
 <a id='foo' style='position:absolute;top:-10px'>test</a>
 <a id='bar' style='position:absolute;left:-10px'>test</a>\
 `;
@@ -76,15 +82,15 @@ context("Check visibility",
     return assert.isTrue((DomUtils.getVisibleClientRect((document.getElementById('bar')), true)) !== null);
   }),
 
-  should("detect links that contain only floated / absolutely-positioned divs as visible", function() {
-    document.getElementById("test-div").innerHTML = `\
+  should('detect links that contain only floated / absolutely-positioned divs as visible', () => {
+    document.getElementById('test-div').innerHTML = `\
 <a id='foo'>
   <div style='float:left'>test</div>
 </a>\
 `;
     assert.isTrue((DomUtils.getVisibleClientRect((document.getElementById('foo')), true)) !== null);
 
-    document.getElementById("test-div").innerHTML = `\
+    document.getElementById('test-div').innerHTML = `\
 <a id='foo'>
   <div style='position:absolute;top:0;left:0'>test</div>
 </a>\
@@ -92,8 +98,8 @@ context("Check visibility",
     return assert.isTrue((DomUtils.getVisibleClientRect((document.getElementById('foo')), true)) !== null);
   }),
 
-  should("detect links that contain only invisible floated divs as invisible", function() {
-    document.getElementById("test-div").innerHTML = `\
+  should('detect links that contain only invisible floated divs as invisible', () => {
+    document.getElementById('test-div').innerHTML = `\
 <a id='foo'>
   <div style='float:left;visibility:hidden'>test</div>
 </a>\
@@ -101,9 +107,9 @@ context("Check visibility",
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('foo')), true)));
   }),
 
-  should("detect font-size: 0; and display: inline; links when their children are display: inline", function() {
+  should('detect font-size: 0; and display: inline; links when their children are display: inline', () => {
     // This test represents the minimal test case covering issue #1554.
-    document.getElementById("test-div").innerHTML = `\
+    document.getElementById('test-div').innerHTML = `\
 <a id='foo' style='display: inline; font-size: 0px;'>
   <div style='display: inline; font-size: 16px;'>test</div>
 </a>\
@@ -111,9 +117,9 @@ context("Check visibility",
     return assert.isTrue((DomUtils.getVisibleClientRect((document.getElementById('foo')), true)) !== null);
   }),
 
-  should("detect links inside opacity:0 elements as visible", function() {
+  should('detect links inside opacity:0 elements as visible', () => {
     // XXX This is an expected failure. See issue #16.
-    document.getElementById("test-div").innerHTML = `\
+    document.getElementById('test-div').innerHTML = `\
 <div style='opacity:0'>
   <a id='foo'>test</a>
 </div>\
@@ -121,9 +127,9 @@ context("Check visibility",
     return assert.isTrue((DomUtils.getVisibleClientRect((document.getElementById('foo')), true)) !== null);
   }),
 
-  should("Detect links within SVGs as visible", function() {
+  should('Detect links within SVGs as visible', () => {
     // XXX this is an expected failure
-    document.getElementById("test-div").innerHTML = `\
+    document.getElementById('test-div').innerHTML = `\
 <svg>
   <a id='foo' xlink:href='http://www.example.com/'>
     <text x='0' y='68'>test</text>
@@ -131,5 +137,4 @@ context("Check visibility",
 </svg>\
 `;
     return assert.equal(null, (DomUtils.getVisibleClientRect((document.getElementById('foo')), true)));
-  })
-);
+  }));

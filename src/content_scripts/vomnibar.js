@@ -1,3 +1,11 @@
+/* eslint-disable
+    max-len,
+    no-nested-ternary,
+    no-return-assign,
+    no-undef,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -19,44 +27,50 @@ const Vomnibar = {
   // from the current frame.
 
   activate(sourceFrameId, registryEntry) {
-    return this.extractOptionsFromRegistryEntry(registryEntry, options => {
-      return this.open(sourceFrameId, extend(options, {completer:"omni"}));
-    });
+    return this.extractOptionsFromRegistryEntry(registryEntry, (options) => this.open(sourceFrameId, extend(options, { completer: 'omni' })));
   },
 
   activateInNewTab(sourceFrameId, registryEntry) {
-    return this.extractOptionsFromRegistryEntry(registryEntry, options => {
-      return this.open(sourceFrameId, extend(options, {completer:"omni", newTab: true}));
+    return this.extractOptionsFromRegistryEntry(registryEntry, (options) => this.open(sourceFrameId, extend(options, { completer: 'omni', newTab: true })));
+  },
+
+  activateTabSelection(sourceFrameId) {
+    return this.open(sourceFrameId, {
+      completer: 'tabs',
+      selectFirst: true,
+    });
+  },
+  activateBookmarks(sourceFrameId) {
+    return this.open(sourceFrameId, {
+      completer: 'bookmarks',
+      selectFirst: true,
+    });
+  },
+  activateBookmarksInNewTab(sourceFrameId) {
+    return this.open(sourceFrameId, {
+      completer: 'bookmarks',
+      selectFirst: true,
+      newTab: true,
+    });
+  },
+  activateEditUrl(sourceFrameId) {
+    return this.open(sourceFrameId, {
+      completer: 'omni',
+      selectFirst: false,
+      query: window.location.href,
+    });
+  },
+  activateEditUrlInNewTab(sourceFrameId) {
+    return this.open(sourceFrameId, {
+      completer: 'omni',
+      selectFirst: false,
+      query: window.location.href,
+      newTab: true,
     });
   },
 
-  activateTabSelection(sourceFrameId) { return this.open(sourceFrameId, {
-    completer: "tabs",
-    selectFirst: true
-  }); },
-  activateBookmarks(sourceFrameId) { return this.open(sourceFrameId, {
-    completer: "bookmarks",
-    selectFirst: true
-  }); },
-  activateBookmarksInNewTab(sourceFrameId) { return this.open(sourceFrameId, {
-    completer: "bookmarks",
-    selectFirst: true,
-    newTab: true
-  }); },
-  activateEditUrl(sourceFrameId) { return this.open(sourceFrameId, {
-    completer: "omni",
-    selectFirst: false,
-    query: window.location.href
-  }); },
-  activateEditUrlInNewTab(sourceFrameId) { return this.open(sourceFrameId, {
-    completer: "omni",
-    selectFirst: false,
-    query: window.location.href,
-    newTab: true
-  }); },
-
   init() {
-    return this.vomnibarUI != null ? this.vomnibarUI : (this.vomnibarUI = new UIComponent("pages/vomnibar.html", "vomnibarFrame", function() {}));
+    return this.vomnibarUI != null ? this.vomnibarUI : (this.vomnibarUI = new UIComponent('pages/vomnibar.html', 'vomnibarFrame', (() => {})));
   },
 
   // This function opens the vomnibar. It accepts options, a map with the values:
@@ -68,8 +82,8 @@ const Vomnibar = {
     this.init();
     // The Vomnibar cannot coexist with the help dialog (it causes focus issues).
     HelpDialog.abort();
-    return this.vomnibarUI.activate(extend(options, { name: "activate", sourceFrameId, focus: true }));
-  }
+    return this.vomnibarUI.activate(extend(options, { name: 'activate', sourceFrameId, focus: true }));
+  },
 };
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));

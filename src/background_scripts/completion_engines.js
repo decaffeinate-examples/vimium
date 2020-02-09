@@ -1,3 +1,18 @@
+/* eslint-disable
+    class-methods-use-this,
+    constructor-super,
+    max-classes-per-file,
+    max-len,
+    no-cond-assign,
+    no-constant-condition,
+    no-continue,
+    no-eval,
+    no-restricted-syntax,
+    no-this-before-super,
+    no-undef,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS001: Remove Babel/TypeScript constructor workaround
@@ -41,11 +56,12 @@
 class BaseEngine {
   constructor(options) {
     extend(this, options);
-    if ("string" === typeof this.regexps) { this.regexps = [ this.regexps ]; }
-    this.regexps = this.regexps.map(regexp => new RegExp(regexp));
+    if (typeof this.regexps === 'string') { this.regexps = [this.regexps]; }
+    this.regexps = this.regexps.map((regexp) => new RegExp(regexp));
   }
 
   match(searchUrl) { return Utils.matchesAnyRegexp(this.regexps, searchUrl); }
+
   getUrl(queryTerms) { return Utils.createSearchUrl(queryTerms, this.engineUrl); }
 }
 
@@ -54,8 +70,8 @@ class GoogleXMLBaseEngine extends BaseEngine {
   parse(xhr) {
     return (() => {
       const result = [];
-      for (let suggestion of Array.from(xhr.responseXML.getElementsByTagName("suggestion"))) {
-        if (!(suggestion = suggestion.getAttribute("data"))) { continue; }
+      for (let suggestion of Array.from(xhr.responseXML.getElementsByTagName('suggestion'))) {
+        if (!(suggestion = suggestion.getAttribute('data'))) { continue; }
         result.push(suggestion);
       }
       return result;
@@ -66,48 +82,49 @@ class GoogleXMLBaseEngine extends BaseEngine {
 class Google extends GoogleXMLBaseEngine {
   constructor() {
     super({
-      engineUrl: "https://suggestqueries.google.com/complete/search?ss_protocol=legace&client=toolbar&q=%s",
-      regexps: "^https?://[a-z]+\\.google\\.(com|ie|co\\.(uk|jp)|ca|com\\.au)/",
+      engineUrl: 'https://suggestqueries.google.com/complete/search?ss_protocol=legace&client=toolbar&q=%s',
+      regexps: '^https?://[a-z]+\\.google\\.(com|ie|co\\.(uk|jp)|ca|com\\.au)/',
       example: {
-        searchUrl: "https://www.google.com/search?q=%s",
-        keyword: "g"
-      }
+        searchUrl: 'https://www.google.com/search?q=%s',
+        keyword: 'g',
+      },
     });
   }
 }
 
 class GoogleMaps extends GoogleXMLBaseEngine {
   static initClass() {
-    this.prototype.prefix = "map of ";
+    this.prototype.prefix = 'map of ';
   }
+
   constructor() {
     {
       // Hack: trick Babel/TypeScript into allowing this before super.
       if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
+      const thisFn = (() => this).toString();
+      const thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
       eval(`${thisName} = this;`);
     }
     super({
       engineUrl: `https://suggestqueries.google.com/complete/search?ss_protocol=legace&client=toolbar&q=${this.prefix.split(' ').join('+')}%s`,
-      regexps: "^https?://[a-z]+\\.google\\.(com|ie|co\\.(uk|jp)|ca|com\\.au)/maps",
+      regexps: '^https?://[a-z]+\\.google\\.(com|ie|co\\.(uk|jp)|ca|com\\.au)/maps',
       example: {
-        searchUrl: "https://www.google.com/maps?q=%s",
-        keyword: "m",
+        searchUrl: 'https://www.google.com/maps?q=%s',
+        keyword: 'm',
         explanation:
           `\
 This uses regular Google completion, but prepends the text "<tt>map of</tt>" to the query.  It works
 well for places, countries, states, geographical regions and the like, but will not perform address
 search.\
-`
-      }
+`,
+      },
     });
   }
 
   parse(xhr) {
     return (() => {
       const result = [];
-      for (let suggestion of Array.from(super.parse(xhr))) {
+      for (const suggestion of Array.from(super.parse(xhr))) {
         if (!suggestion.startsWith(this.prefix)) { continue; }
         result.push(suggestion.slice(this.prefix.length));
       }
@@ -120,12 +137,12 @@ GoogleMaps.initClass();
 class Youtube extends GoogleXMLBaseEngine {
   constructor() {
     super({
-      engineUrl: "https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&xml=t&q=%s",
-      regexps: "^https?://[a-z]+\\.youtube\\.com/results",
+      engineUrl: 'https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&xml=t&q=%s',
+      regexps: '^https?://[a-z]+\\.youtube\\.com/results',
       example: {
-        searchUrl: "https://www.youtube.com/results?search_query=%s",
-        keyword: "y"
-      }
+        searchUrl: 'https://www.youtube.com/results?search_query=%s',
+        keyword: 'y',
+      },
     });
   }
 }
@@ -133,12 +150,12 @@ class Youtube extends GoogleXMLBaseEngine {
 class Wikipedia extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=%s",
-      regexps: "^https?://[a-z]+\\.wikipedia\\.org/",
+      engineUrl: 'https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=%s',
+      regexps: '^https?://[a-z]+\\.wikipedia\\.org/',
       example: {
-        searchUrl: "https://www.wikipedia.org/w/index.php?title=Special:Search&search=%s",
-        keyword: "w"
-      }
+        searchUrl: 'https://www.wikipedia.org/w/index.php?title=Special:Search&search=%s',
+        keyword: 'w',
+      },
     });
   }
 
@@ -148,12 +165,12 @@ class Wikipedia extends BaseEngine {
 class Bing extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://api.bing.com/osjson.aspx?query=%s",
-      regexps: "^https?://www\\.bing\\.com/search",
+      engineUrl: 'https://api.bing.com/osjson.aspx?query=%s',
+      regexps: '^https?://www\\.bing\\.com/search',
       example: {
-        searchUrl: "https://www.bing.com/search?q=%s",
-        keyword: "b"
-      }
+        searchUrl: 'https://www.bing.com/search?q=%s',
+        keyword: 'b',
+      },
     });
   }
 
@@ -163,12 +180,12 @@ class Bing extends BaseEngine {
 class Amazon extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://completion.amazon.com/search/complete?method=completion&search-alias=aps&client=amazon-search-ui&mkt=1&q=%s",
-      regexps: "^https?://www\\.amazon\\.(com|co\\.uk|ca|de|com\\.au)/s/",
+      engineUrl: 'https://completion.amazon.com/search/complete?method=completion&search-alias=aps&client=amazon-search-ui&mkt=1&q=%s',
+      regexps: '^https?://www\\.amazon\\.(com|co\\.uk|ca|de|com\\.au)/s/',
       example: {
-        searchUrl: "https://www.amazon.com/s/?field-keywords=%s",
-        keyword: "a"
-      }
+        searchUrl: 'https://www.amazon.com/s/?field-keywords=%s',
+        keyword: 'a',
+      },
     });
   }
 
@@ -178,12 +195,12 @@ class Amazon extends BaseEngine {
 class AmazonJapan extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://completion.amazon.co.jp/search/complete?method=completion&search-alias=aps&client=amazon-search-ui&mkt=6&q=%s",
-      regexps: "^https?://www\\.amazon\\.co\\.jp/(s/|gp/search)",
+      engineUrl: 'https://completion.amazon.co.jp/search/complete?method=completion&search-alias=aps&client=amazon-search-ui&mkt=6&q=%s',
+      regexps: '^https?://www\\.amazon\\.co\\.jp/(s/|gp/search)',
       example: {
-        searchUrl: "https://www.amazon.co.jp/s/?field-keywords=%s",
-        keyword: "aj"
-      }
+        searchUrl: 'https://www.amazon.co.jp/s/?field-keywords=%s',
+        keyword: 'aj',
+      },
     });
   }
 
@@ -193,12 +210,12 @@ class AmazonJapan extends BaseEngine {
 class DuckDuckGo extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://duckduckgo.com/ac/?q=%s",
-      regexps: "^https?://([a-z]+\\.)?duckduckgo\\.com/",
+      engineUrl: 'https://duckduckgo.com/ac/?q=%s',
+      regexps: '^https?://([a-z]+\\.)?duckduckgo\\.com/',
       example: {
-        searchUrl: "https://duckduckgo.com/?q=%s",
-        keyword: "d"
-      }
+        searchUrl: 'https://duckduckgo.com/?q=%s',
+        keyword: 'd',
+      },
     });
   }
 
@@ -210,13 +227,13 @@ class DuckDuckGo extends BaseEngine {
 class Webster extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://www.merriam-webster.com/lapi/v1/mwol-search/autocomplete?search=%s",
-      regexps: "^https?://www.merriam-webster.com/dictionary/",
+      engineUrl: 'https://www.merriam-webster.com/lapi/v1/mwol-search/autocomplete?search=%s',
+      regexps: '^https?://www.merriam-webster.com/dictionary/',
       example: {
-        searchUrl: "https://www.merriam-webster.com/dictionary/%s",
-        keyword: "dw",
-        description: "Dictionary"
-      }
+        searchUrl: 'https://www.merriam-webster.com/dictionary/%s',
+        keyword: 'dw',
+        description: 'Dictionary',
+      },
     });
   }
 
@@ -228,12 +245,12 @@ class Webster extends BaseEngine {
 class Qwant extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://api.qwant.com/api/suggest?q=%s",
-      regexps: "^https?://www\\.qwant\\.com/",
+      engineUrl: 'https://api.qwant.com/api/suggest?q=%s',
+      regexps: '^https?://www\\.qwant\\.com/',
       example: {
-        searchUrl: "https://www.qwant.com/?q=%s",
-        keyword: "qw"
-      }
+        searchUrl: 'https://www.qwant.com/?q=%s',
+        keyword: 'qw',
+      },
     });
   }
 
@@ -245,12 +262,12 @@ class Qwant extends BaseEngine {
 class UpToDate extends BaseEngine {
   constructor() {
     super({
-      engineUrl: "https://www.uptodate.com/services/app/contents/search/autocomplete/json?term=%s&limit=10",
-      regexps: "^https?://www\\.uptodate\\.com/",
+      engineUrl: 'https://www.uptodate.com/services/app/contents/search/autocomplete/json?term=%s&limit=10',
+      regexps: '^https?://www\\.uptodate\\.com/',
       example: {
-        searchUrl: "https://www.uptodate.com/contents/search?search=%s&searchType=PLAIN_TEXT&source=USER_INPUT&searchControl=TOP_PULLDOWN&autoComplete=false",
-        keyword: "upto"
-      }
+        searchUrl: 'https://www.uptodate.com/contents/search?search=%s&searchType=PLAIN_TEXT&source=USER_INPUT&searchControl=TOP_PULLDOWN&autoComplete=false',
+        keyword: 'upto',
+      },
     });
   }
 
@@ -262,8 +279,8 @@ class UpToDate extends BaseEngine {
 class DummyCompletionEngine extends BaseEngine {
   constructor() {
     super({
-      regexps: ".",
-      dummy: true
+      regexps: '.',
+      dummy: true,
     });
   }
 }
@@ -281,7 +298,7 @@ const CompletionEngines = [
   Webster,
   Qwant,
   UpToDate,
-  DummyCompletionEngine
+  DummyCompletionEngine,
 ];
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : window;

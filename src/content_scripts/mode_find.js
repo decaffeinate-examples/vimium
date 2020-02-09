@@ -1,3 +1,25 @@
+/* eslint-disable
+    consistent-return,
+    constructor-super,
+    default-case,
+    func-names,
+    max-classes-per-file,
+    max-len,
+    no-constant-condition,
+    no-empty,
+    no-eval,
+    no-nested-ternary,
+    no-param-reassign,
+    no-return-assign,
+    no-this-before-super,
+    no-undef,
+    no-unused-vars,
+    no-use-before-define,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS001: Remove Babel/TypeScript constructor workaround
@@ -13,7 +35,7 @@
 class SuppressPrintable extends Mode {
   constructor(options) {
     super(options);
-    const handler = event => KeyboardUtils.isPrintable(event) ? this.suppressEvent : this.continueBubbling;
+    const handler = (event) => (KeyboardUtils.isPrintable(event) ? this.suppressEvent : this.continueBubbling);
     const type = DomUtils.getSelectionType();
 
     // We use unshift here, so we see events after normal mode, so we only see unmapped keys.
@@ -21,11 +43,11 @@ class SuppressPrintable extends Mode {
       _name: `mode-${this.id}/suppress-printable`,
       keydown: handler,
       keypress: handler,
-      keyup: event => {
+      keyup: (event) => {
         // If the selection type has changed (usually, no longer "Range"), then the user is interacting with
         // the input element, so we get out of the way.  See discussion of option 5c from #1415.
         if (DomUtils.getSelectionType() !== type) { return this.exit(); }
-      }
+      },
     });
   }
 }
@@ -44,29 +66,28 @@ class PostFindMode extends SuppressPrintable {
     const element = document.activeElement;
 
     super({
-      name: "post-find",
+      name: 'post-find',
       // PostFindMode shares a singleton with focusInput; each displaces the other.
-      singleton: "post-find-mode/focus-input",
+      singleton: 'post-find-mode/focus-input',
       exitOnBlur: element,
       exitOnClick: true,
       keydown(event) { return InsertMode.suppressEvent(event); }, // Always truthy, so always continues bubbling.
       keypress(event) { return InsertMode.suppressEvent(event); },
-      keyup(event) { return InsertMode.suppressEvent(event); }
+      keyup(event) { return InsertMode.suppressEvent(event); },
     });
 
     // If the very-next keydown is Escape, then exit immediately, thereby passing subsequent keys to the
     // underlying insert-mode instance.
     this.push({
       _name: `mode-${this.id}/handle-escape`,
-      keydown: event => {
+      keydown: (event) => {
         if (KeyboardUtils.isEscape(event)) {
           this.exit();
           return this.suppressEvent;
-        } else {
-          handlerStack.remove();
-          return this.continueBubbling;
         }
-      }
+        handlerStack.remove();
+        return this.continueBubbling;
+      },
     });
   }
 }
@@ -74,13 +95,13 @@ class PostFindMode extends SuppressPrintable {
 class FindMode extends Mode {
   static initClass() {
     this.query = {
-      rawQuery: "",
-      parsedQuery: "",
+      rawQuery: '',
+      parsedQuery: '',
       matchCount: 0,
-      hasResults: false
+      hasResults: false,
     };
-  
-    this.restoreDefaultSelectionHighlight = forTrusted(() => document.body.classList.remove("vimiumFindMode"));
+
+    this.restoreDefaultSelectionHighlight = forTrusted(() => document.body.classList.remove('vimiumFindMode'));
   }
 
   constructor(options) {
@@ -88,28 +109,26 @@ class FindMode extends Mode {
     {
       // Hack: trick Babel/TypeScript into allowing this before super.
       if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
+      const thisFn = (() => this).toString();
+      const thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
       eval(`${thisName} = this;`);
     }
     if (options == null) { options = {}; }
     this.initialRange = getCurrentRange();
-    FindMode.query = {rawQuery: ""};
+    FindMode.query = { rawQuery: '' };
     if (options.returnToViewport) {
       this.scrollX = window.scrollX;
       this.scrollY = window.scrollY;
     }
     super(extend(options, {
-      name: "find",
+      name: 'find',
       indicator: false,
       exitOnClick: true,
       exitOnEscape: true,
       // This prevents further Vimium commands launching before the find-mode HUD receives the focus.
       // E.g. "/" followed quickly by "i" should not leave us in insert mode.
-      suppressAllKeyboardEvents: true
-    }
-    )
-    );
+      suppressAllKeyboardEvents: true,
+    }));
 
     HUD.showFindMode(this);
   }
@@ -147,32 +166,31 @@ class FindMode extends Mode {
     // character. here we grep for the relevant escape sequences.
     this.query.isRegex = Settings.get('regexFindMode');
     this.query.parsedQuery = this.query.rawQuery.replace(/(\\{1,2})([rRI]?)/g, (match, slashes, flag) => {
-      if ((flag === "") || (slashes.length !== 1)) { return match; }
+      if ((flag === '') || (slashes.length !== 1)) { return match; }
       switch (flag) {
-        case "r":
+        case 'r':
           this.query.isRegex = true;
           break;
-        case "R":
+        case 'R':
           this.query.isRegex = false;
           break;
       }
-      return "";
+      return '';
     });
 
     // Implement smartcase.
     this.query.ignoreCase = !Utils.hasUpperCase(this.query.parsedQuery);
 
-    const regexPattern = this.query.isRegex ?
-      this.query.parsedQuery
-    :
-      Utils.escapeRegexSpecialCharacters(this.query.parsedQuery);
+    const regexPattern = this.query.isRegex
+      ? this.query.parsedQuery
+      : Utils.escapeRegexSpecialCharacters(this.query.parsedQuery);
 
     // If we are dealing with a regex, grep for all matches in the text, and then call window.find() on them
     // sequentially so the browser handles the scrolling / text selection.
     // If we are doing a basic plain string match, we still want to grep for matches of the string, so we can
     // show a the number of results.
     try {
-      pattern = new RegExp(regexPattern, `g${this.query.ignoreCase ? "i" : ""}`);
+      pattern = new RegExp(regexPattern, `g${this.query.ignoreCase ? 'i' : ''}`);
     } catch (error) {
       return; // If we catch a SyntaxError, assume the user is not done typing yet and return quietly.
     }
@@ -188,7 +206,7 @@ class FindMode extends Mode {
 
   static getNextQueryFromRegexMatches(stepSize) {
     // find()ing an empty query always returns false
-    if (!this.query.regexMatches) { return ""; }
+    if (!this.query.regexMatches) { return ''; }
 
     const totalMatches = this.query.regexMatches.length;
     this.query.activeRegexIndex += stepSize + totalMatches;
@@ -206,9 +224,8 @@ class FindMode extends Mode {
 
     if (this.query.isRegex) {
       return this.getNextQueryFromRegexMatches(backwards ? -1 : 1);
-    } else {
-      return this.query.parsedQuery;
     }
+    return this.query.parsedQuery;
   }
 
   static saveQuery() { return FindModeHistory.saveQuery(this.query.rawQuery); }
@@ -219,14 +236,14 @@ class FindMode extends Mode {
     options = extend({
       backwards: false,
       caseSensitive: !this.query.ignoreCase,
-      colorSelection: true
+      colorSelection: true,
     }, options);
     if (query == null) { query = FindMode.getQuery(options.backwards); }
 
     if (options.colorSelection) {
-      document.body.classList.add("vimiumFindMode");
+      document.body.classList.add('vimiumFindMode');
       // ignore the selectionchange event generated by find()
-      document.removeEventListener("selectionchange", this.restoreDefaultSelectionHighlight, true);
+      document.removeEventListener('selectionchange', this.restoreDefaultSelectionHighlight, true);
     }
 
     try {
@@ -241,8 +258,9 @@ class FindMode extends Mode {
 
     if (options.colorSelection) {
       setTimeout(
-        () => document.addEventListener("selectionchange", this.restoreDefaultSelectionHighlight, true)
-      , 0);
+        () => document.addEventListener('selectionchange', this.restoreDefaultSelectionHighlight, true),
+        0,
+      );
     }
 
     // We are either in normal mode ("n"), or find mode ("/").  We are not in insert mode.  Nevertheless, if a
@@ -257,7 +275,7 @@ class FindMode extends Mode {
 
   // The user has found what they're looking for and is finished searching. We enter insert mode, if possible.
   static handleEscape() {
-    document.body.classList.remove("vimiumFindMode");
+    document.body.classList.remove('vimiumFindMode');
     // Removing the class does not re-color existing selections. we recreate the current selection so it reverts
     // back to the default color.
     const selection = window.getSelection();
@@ -272,7 +290,7 @@ class FindMode extends Mode {
   // Save the query so the user can do further searches with it.
   static handleEnter() {
     focusFoundLink();
-    document.body.classList.add("vimiumFindMode");
+    document.body.classList.add('vimiumFindMode');
     return FindMode.saveQuery();
   }
 
@@ -280,19 +298,18 @@ class FindMode extends Mode {
     // Bail out if we don't have any query text.
     const nextQuery = FindMode.getQuery(backwards);
     if (!nextQuery) {
-      HUD.showForDuration("No query to find.", 1000);
+      HUD.showForDuration('No query to find.', 1000);
       return;
     }
 
     Marks.setPreviousPosition();
-    FindMode.query.hasResults = FindMode.execute(nextQuery, {backwards});
+    FindMode.query.hasResults = FindMode.execute(nextQuery, { backwards });
 
     if (FindMode.query.hasResults) {
       focusFoundLink();
       return new PostFindMode();
-    } else {
-      return HUD.showForDuration(`No matches for '${FindMode.query.rawQuery}'`, 1000);
     }
+    return HUD.showForDuration(`No matches for '${FindMode.query.rawQuery}'`, 1000);
   }
 
   checkReturnToViewPort() {
@@ -301,43 +318,42 @@ class FindMode extends Mode {
 }
 FindMode.initClass();
 
-var getCurrentRange = function() {
+var getCurrentRange = function () {
   const selection = getSelection();
-  if (DomUtils.getSelectionType(selection) === "None") {
+  if (DomUtils.getSelectionType(selection) === 'None') {
     const range = document.createRange();
     range.setStart(document.body, 0);
     range.setEnd(document.body, 0);
     return range;
-  } else {
-    if (DomUtils.getSelectionType(selection) === "Range") { selection.collapseToStart(); }
-    return selection.getRangeAt(0);
   }
+  if (DomUtils.getSelectionType(selection) === 'Range') { selection.collapseToStart(); }
+  return selection.getRangeAt(0);
 };
 
-const getLinkFromSelection = function() {
+const getLinkFromSelection = function () {
   let node = window.getSelection().anchorNode;
   while (node && (node !== document.body)) {
-    if (node.nodeName.toLowerCase() === "a") { return node; }
+    if (node.nodeName.toLowerCase() === 'a') { return node; }
     node = node.parentNode;
   }
   return null;
 };
 
-var focusFoundLink = function() {
+var focusFoundLink = function () {
   if (FindMode.query.hasResults) {
     const link = getLinkFromSelection();
     if (link) { return link.focus(); }
   }
 };
 
-var selectFoundInputElement = function() {
+var selectFoundInputElement = function () {
   // Since the last focused element might not be the one currently pointed to by find (e.g.  the current one
   // might be disabled and therefore unable to receive focus), we use the approximate heuristic of checking
   // that the last anchor node is an ancestor of our element.
   const findModeAnchorNode = document.getSelection().anchorNode;
-  if (FindMode.query.hasResults && document.activeElement &&
-      DomUtils.isSelectable(document.activeElement) &&
-      DomUtils.isDOMDescendant(findModeAnchorNode, document.activeElement)) {
+  if (FindMode.query.hasResults && document.activeElement
+      && DomUtils.isSelectable(document.activeElement)
+      && DomUtils.isDOMDescendant(findModeAnchorNode, document.activeElement)) {
     return DomUtils.simulateSelect(document.activeElement);
   }
 };

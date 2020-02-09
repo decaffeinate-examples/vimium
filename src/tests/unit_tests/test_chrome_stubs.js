@@ -1,3 +1,17 @@
+/* eslint-disable
+    camelcase,
+    class-methods-use-this,
+    consistent-return,
+    no-multi-assign,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-return-assign,
+    no-shadow,
+    no-undef,
+    no-unused-vars,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -17,20 +31,20 @@ let XMLHttpRequest;
 exports.window = {};
 exports.localStorage = {};
 
-global.navigator =
-  {appVersion: "5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36"};
+global.navigator = { appVersion: '5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36' };
 
 global.document = {
   createElement() { return {}; },
-  addEventListener() {}
+  addEventListener() {},
 };
 
-global.XMLHttpRequest =
-  (XMLHttpRequest = class XMLHttpRequest {
-    open() {}
-    onload() {}
-    send() {}
-  });
+global.XMLHttpRequest = (XMLHttpRequest = class XMLHttpRequest {
+  open() {}
+
+  onload() {}
+
+  send() {}
+});
 
 exports.chrome = {
   areRunningVimiumTests: true,
@@ -38,78 +52,78 @@ exports.chrome = {
   runtime: {
     getURL() {},
     getManifest() {
-      return {version: "1.2.3"};
+      return { version: '1.2.3' };
     },
     onConnect: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onMessage: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onInstalled: {
-      addListener() {}
-    }
+      addListener() {},
+    },
   },
 
   extension: {
     getURL(path) { return path; },
     getBackgroundPage() { return {}; },
-    getViews() { return []; }
+    getViews() { return []; },
   },
 
   tabs: {
     onUpdated: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onAttached: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onMoved: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onRemoved: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onActivated: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     onReplaced: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
-    query() { return true; }
+    query() { return true; },
   },
 
   webNavigation: {
     onHistoryStateUpdated: {
-      addListener() {}
+      addListener() {},
     },
     onReferenceFragmentUpdated: {
-      addListener() {}
+      addListener() {},
     },
     onCommitted: {
-      addListener() {}
-    }
+      addListener() {},
+    },
   },
 
   windows: {
     onRemoved: {
-      addListener() { return true; }
+      addListener() { return true; },
     },
     getAll() { return true; },
     onFocusChanged: {
-      addListener() { return true; }
-    }
+      addListener() { return true; },
+    },
   },
 
   browserAction: {
-    setBadgeBackgroundColor() {}
+    setBadgeBackgroundColor() {},
   },
   storage: {
     // chrome.storage.local
     local: {
       get(_, callback) { return (typeof callback === 'function' ? callback() : undefined); },
       set(_, callback) { return (typeof callback === 'function' ? callback() : undefined); },
-      remove(_, callback) { return (typeof callback === 'function' ? callback() : undefined); }
+      remove(_, callback) { return (typeof callback === 'function' ? callback() : undefined); },
     },
 
     // chrome.storage.onChanged
@@ -121,7 +135,7 @@ exports.chrome = {
         chrome.runtime.lastError = undefined;
         const key_value = {};
         key_value[key] = { newValue: value };
-        if (this.func) { return this.func(key_value,'sync'); }
+        if (this.func) { return this.func(key_value, 'sync'); }
       },
 
       callEmpty(key) {
@@ -129,13 +143,13 @@ exports.chrome = {
         if (this.func) {
           const items = {};
           items[key] = {};
-          return this.func(items,'sync');
+          return this.func(items, 'sync');
         }
-      }
+      },
     },
 
     session: {
-      MAX_SESSION_RESULTS: 25
+      MAX_SESSION_RESULTS: 25,
     },
 
     // chrome.storage.sync
@@ -143,7 +157,8 @@ exports.chrome = {
       store: {},
 
       set(items, callback) {
-        let key, value;
+        let key; let
+          value;
         chrome.runtime.lastError = undefined;
         for (key of Object.keys(items || {})) {
           value = items[key];
@@ -155,7 +170,7 @@ exports.chrome = {
           const result = [];
           for (key of Object.keys(items || {})) {
             value = items[key];
-            result.push(global.chrome.storage.onChanged.call(key,value));
+            result.push(global.chrome.storage.onChanged.call(key, value));
           }
           return result;
         })();
@@ -187,7 +202,7 @@ exports.chrome = {
         if (callback) { callback(); }
         // Now, generate (supposedly asynchronous) notification for listeners.
         return global.chrome.storage.onChanged.callEmpty(key);
-      }
-    }
-  }
+      },
+    },
+  },
 };

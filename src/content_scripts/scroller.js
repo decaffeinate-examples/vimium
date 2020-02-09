@@ -1,3 +1,24 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    max-len,
+    no-cond-assign,
+    no-multi-assign,
+    no-nested-ternary,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-return-assign,
+    no-shadow,
+    no-undef,
+    no-underscore-dangle,
+    no-unused-vars,
+    no-use-before-define,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -19,8 +40,9 @@ let activatedElement = null;
 // is enabled, then we need to use document.scrollingElement instead.  There's an explanation in #2168:
 // https://github.com/philc/vimium/pull/2168#issuecomment-236488091
 
-const getScrollingElement = function() {
-  let left, left1;
+const getScrollingElement = function () {
+  let left; let
+    left1;
   return (left = (left1 = getSpecialScrollingElement()) != null ? left1 : document.scrollingElement) != null ? left : document.body;
 };
 
@@ -29,25 +51,24 @@ const getScrollingElement = function() {
 // (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sign) Math.sign() was
 // only introduced in Chrome 38.  This caused problems in R1.48 for users with old Chrome installations.  We
 // can replace this with Math.sign() at some point.
-const getSign = function(val) {
+const getSign = function (val) {
   if (!val) {
     return 0;
-  } else {
-    if (val < 0) { return -1; } else { return 1; }
   }
+  if (val < 0) { return -1; } return 1;
 };
 
 const scrollProperties = {
   x: {
     axisName: 'scrollLeft',
     max: 'scrollWidth',
-    viewSize: 'clientWidth'
+    viewSize: 'clientWidth',
   },
   y: {
     axisName: 'scrollTop',
     max: 'scrollHeight',
-    viewSize: 'clientHeight'
-  }
+    viewSize: 'clientHeight',
+  },
 };
 
 // Translate a scroll request into a number (which will be interpreted by `scrollBy` as a relative amount, or
@@ -55,31 +76,29 @@ const scrollProperties = {
 // which case it is simply returned) or a string.  If :amount is a string, then it is either "max" (meaning the
 // height or width of element), or "viewSize".  In both cases, we look up and return the requested amount,
 // either in `element` or in `window`, as appropriate.
-const getDimension = function(el, direction, amount) {
+const getDimension = function (el, direction, amount) {
   if (Utils.isString(amount)) {
     const name = amount;
     // the clientSizes of the body are the dimensions of the entire page, but the viewport should only be the
     // part visible through the window
     if ((name === 'viewSize') && (el === getScrollingElement())) {
       // TODO(smblott) Should we not be returning the width/height of element, here?
-      if (direction === 'x') { return window.innerWidth; } else { return window.innerHeight; }
-    } else {
-      return el[scrollProperties[direction][name]];
+      if (direction === 'x') { return window.innerWidth; } return window.innerHeight;
     }
-  } else {
-    return amount;
+    return el[scrollProperties[direction][name]];
   }
+  return amount;
 };
 
 // Perform a scroll. Return true if we successfully scrolled by any amount, and false otherwise.
-const performScroll = function(element, direction, amount) {
+const performScroll = function (element, direction, amount) {
   const {
-    axisName
+    axisName,
   } = scrollProperties[direction];
   const before = element[axisName];
-  if (typeof element.scrollBy === "function") {
-    const scrollArg = {behavior: "instant"};
-    scrollArg[direction === "x" ? "left" : "top"] = amount;
+  if (typeof element.scrollBy === 'function') {
+    const scrollArg = { behavior: 'instant' };
+    scrollArg[direction === 'x' ? 'left' : 'top'] = amount;
     element.scrollBy(scrollArg);
   } else {
     element[axisName] += amount;
@@ -88,14 +107,14 @@ const performScroll = function(element, direction, amount) {
 };
 
 // Test whether `element` should be scrolled. E.g. hidden elements should not be scrolled.
-const shouldScroll = function(element, direction) {
+const shouldScroll = function (element, direction) {
   let needle;
   const computedStyle = window.getComputedStyle(element);
   // Elements with `overflow: hidden` must not be scrolled.
-  if (computedStyle.getPropertyValue(`overflow-${direction}`) === "hidden") { return false; }
+  if (computedStyle.getPropertyValue(`overflow-${direction}`) === 'hidden') { return false; }
   // Elements which are not visible should not be scrolled.
-  if ((needle = computedStyle.getPropertyValue("visibility"), ["hidden", "collapse"].includes(needle))) { return false; }
-  if (computedStyle.getPropertyValue("display") === "none") { return false; }
+  if ((needle = computedStyle.getPropertyValue('visibility'), ['hidden', 'collapse'].includes(needle))) { return false; }
+  if (computedStyle.getPropertyValue('display') === 'none') { return false; }
   return true;
 };
 
@@ -105,7 +124,7 @@ const shouldScroll = function(element, direction) {
 // which :scrollBy and :scrollTo will later scale the scroll amount. :factor can be negative, so we need it
 // here in order to decide whether we should test a forward scroll or a backward scroll.
 // Bug last verified in Chrome 38.0.2125.104.
-const doesScroll = function(element, direction, amount, factor) {
+const doesScroll = function (element, direction, amount, factor) {
   // amount is treated as a relative amount, which is correct for relative scrolls. For absolute scrolls (only
   // gg, G, and friends), amount can be either a string ("max" or "viewSize") or zero. In the former case,
   // we're definitely scrolling forwards, so any positive value will do for delta.  In the latter, we're
@@ -115,15 +134,15 @@ const doesScroll = function(element, direction, amount, factor) {
   return performScroll(element, direction, delta) && performScroll(element, direction, -delta);
 };
 
-const isScrollableElement = function(element, direction, amount, factor) {
-  if (direction == null) { direction = "y"; }
+const isScrollableElement = function (element, direction, amount, factor) {
+  if (direction == null) { direction = 'y'; }
   if (amount == null) { amount = 1; }
   if (factor == null) { factor = 1; }
   return doesScroll(element, direction, amount, factor) && shouldScroll(element, direction);
 };
 
 // From element and its parents, find the first which we should scroll and which does scroll.
-const findScrollableElement = function(element, direction, amount, factor) {
+const findScrollableElement = function (element, direction, amount, factor) {
   while ((element !== getScrollingElement()) && !isScrollableElement(element, direction, amount, factor)) {
     var left;
     element = (left = DomUtils.getContainingElement(element)) != null ? left : getScrollingElement();
@@ -134,37 +153,36 @@ const findScrollableElement = function(element, direction, amount, factor) {
 // On some pages, the scrolling element is not actually scrollable.  Here, we search the document for the
 // largest visible element which does scroll vertically. This is used to initialize activatedElement. See
 // #1358.
-var firstScrollableElement = function(element = null) {
+var firstScrollableElement = function (element = null) {
   let child;
   if (!element) {
     const scrollingElement = getScrollingElement();
-    if (doesScroll(scrollingElement, "y", 1, 1) || doesScroll(scrollingElement, "y", -1, 1)) {
+    if (doesScroll(scrollingElement, 'y', 1, 1) || doesScroll(scrollingElement, 'y', -1, 1)) {
       return scrollingElement;
-    } else {
-      element = document.body != null ? document.body : getScrollingElement();
     }
+    element = document.body != null ? document.body : getScrollingElement();
   }
 
-  if (doesScroll(element, "y", 1, 1) || doesScroll(element, "y", -1, 1)) {
+  if (doesScroll(element, 'y', 1, 1) || doesScroll(element, 'y', -1, 1)) {
     return element;
-  } else {
-    let children = ((() => {
-      const result = [];
-      for (child of Array.from(element.children)) {         result.push({element: child, rect: DomUtils.getVisibleClientRect(child)});
-      }
-      return result;
-    })());
-    children = children.filter(child => child.rect); // Filter out non-visible elements.
-    children.map(child => child.area = child.rect.width * child.rect.height);
-    for (child of Array.from(children.sort((a, b) => b.area - a.area))) { // Largest to smallest by visible area.
-      var ele;
-      if (ele = firstScrollableElement(child.element)) { return ele; }
-    }
-    return null;
   }
+  let children = ((() => {
+    const result = [];
+    for (child of Array.from(element.children)) {
+      result.push({ element: child, rect: DomUtils.getVisibleClientRect(child) });
+    }
+    return result;
+  })());
+  children = children.filter((child) => child.rect); // Filter out non-visible elements.
+  children.map((child) => child.area = child.rect.width * child.rect.height);
+  for (child of Array.from(children.sort((a, b) => b.area - a.area))) { // Largest to smallest by visible area.
+    var ele;
+    if (ele = firstScrollableElement(child.element)) { return ele; }
+  }
+  return null;
 };
 
-const checkVisibility = function(element) {
+const checkVisibility = function (element) {
   // If the activated element has been scrolled completely offscreen, then subsequent changes in its scroll
   // position will not provide any more visual feedback to the user. Therefore, we deactivate it so that
   // subsequent scrolls affect the parent element.
@@ -199,29 +217,23 @@ const CoreScroller = {
     // of some kind.  See #1549.
     return handlerStack.push({
       _name: 'scroller/track-key-status',
-      keydown: event => {
-        return handlerStack.alwaysContinueBubbling(() => {
-          this.keyIsDown = true;
-          if (!event.repeat) { this.time += 1; }
-          return this.lastEvent = event;
-        });
-      },
-      keyup: event => {
-        return handlerStack.alwaysContinueBubbling(() => {
-          this.keyIsDown = false;
-          return this.time += 1;
-        });
-      },
-      blur: event => {
-        return handlerStack.alwaysContinueBubbling(() => {
-          if (event.target === window) { return this.time += 1; }
-        });
-      }
+      keydown: (event) => handlerStack.alwaysContinueBubbling(() => {
+        this.keyIsDown = true;
+        if (!event.repeat) { this.time += 1; }
+        return this.lastEvent = event;
+      }),
+      keyup: (event) => handlerStack.alwaysContinueBubbling(() => {
+        this.keyIsDown = false;
+        return this.time += 1;
+      }),
+      blur: (event) => handlerStack.alwaysContinueBubbling(() => {
+        if (event.target === window) { return this.time += 1; }
+      }),
     });
   },
 
   // Return true if CoreScroller would not initiate a new scroll right now.
-  wouldNotInitiateScroll() { return (this.lastEvent != null ? this.lastEvent.repeat : undefined) && Settings.get("smoothScroll"); },
+  wouldNotInitiateScroll() { return (this.lastEvent != null ? this.lastEvent.repeat : undefined) && Settings.get('smoothScroll'); },
 
   // Calibration fudge factors for continuous scrolling.  The calibration value starts at 1.0.  We then
   // increase it (until it exceeds @maxCalibration) if we guess that the scroll is too slow, or decrease it
@@ -237,7 +249,7 @@ const CoreScroller = {
     if (continuous == null) { continuous = true; }
     if (!amount) { return; }
 
-    if (!Settings.get("smoothScroll")) {
+    if (!Settings.get('smoothScroll')) {
       // Jump scrolling.
       performScroll(element, direction, amount);
       checkVisibility(element);
@@ -249,7 +261,7 @@ const CoreScroller = {
     if (this.lastEvent != null ? this.lastEvent.repeat : undefined) { return; }
 
     const activationTime = ++this.time;
-    const myKeyIsStillDown = () => (left = (this.time === activationTime) && this.keyIsDown) != null ? left : true;
+    const myKeyIsStillDown = () => ((left = (this.time === activationTime) && this.keyIsDown) != null ? left : true);
 
     // Store amount's sign and make amount positive; the arithmetic is clearer when amount is positive.
     const sign = getSign(amount);
@@ -264,7 +276,7 @@ const CoreScroller = {
     let previousTimestamp = null;
     const cancelEventListener = this.installCanceEventListener();
 
-    var animate = timestamp => {
+    var animate = (timestamp) => {
       if (previousTimestamp == null) { previousTimestamp = timestamp; }
       if (timestamp === previousTimestamp) { return requestAnimationFrame(animate); }
 
@@ -276,7 +288,7 @@ const CoreScroller = {
       // The constants in the duration calculation, above, are chosen to provide reasonable scroll speeds for
       // distinct keypresses.  For continuous scrolls, some scrolls are too slow, and others too fast. Here, we
       // speed up the slower scrolls, and slow down the faster scrolls.
-      if (myKeyIsStillDown() && (75 <= totalElapsed) && (this.minCalibration <= calibration && calibration <= this.maxCalibration)) {
+      if (myKeyIsStillDown() && (totalElapsed >= 75) && (this.minCalibration <= calibration && calibration <= this.maxCalibration)) {
         if ((1.05 * calibration * amount) < this.calibrationBoundary) { calibration *= 1.05; } // Speed up slow scrolls.
         if (this.calibrationBoundary < (0.95 * calibration * amount)) { calibration *= 0.95; } // Slow down fast scrolls.
       }
@@ -289,11 +301,10 @@ const CoreScroller = {
       if (delta && performScroll(element, direction, sign * delta)) {
         totalDelta += delta;
         return requestAnimationFrame(animate);
-      } else {
-        // We're done.
-        handlerStack.remove(cancelEventListener);
-        return checkVisibility(element);
       }
+      // We're done.
+      handlerStack.remove(cancelEventListener);
+      return checkVisibility(element);
     };
 
     // If we've been asked not to be continuous, then we advance time, so the myKeyIsStillDown test always
@@ -302,22 +313,22 @@ const CoreScroller = {
 
     // Start scrolling.
     return requestAnimationFrame(animate);
-  }
+  },
 };
 
 // Scroller contains the two main scroll functions which are used by clients.
 const Scroller = {
   init() {
-    const handler = {_name: 'scroller/active-element'};
+    const handler = { _name: 'scroller/active-element' };
     // Only Chrome has a DOMActivate event. On Firefox, we must listen for click. See #3287.
-    const eventName = Utils.isFirefox() ? "click" : "DOMActivate";
-    handler[eventName] = event => handlerStack.alwaysContinueBubbling(function() {
-        // If event.path is present, the true event taget (potentially inside a Shadow DOM inside
-        // event.target) can be found as its first element.
-        // NOTE(mrmr1993): event.path has been renamed to event.deepPath in the spec, but this change is not
-        // yet implemented by Chrome.
-        let left;
-        return activatedElement = (left = (event.deepPath != null ? event.deepPath[0] : undefined) != null ? (event.deepPath != null ? event.deepPath[0] : undefined) : (event.path != null ? event.path[0] : undefined)) != null ? left : event.target;
+    const eventName = Utils.isFirefox() ? 'click' : 'DOMActivate';
+    handler[eventName] = (event) => handlerStack.alwaysContinueBubbling(() => {
+      // If event.path is present, the true event taget (potentially inside a Shadow DOM inside
+      // event.target) can be found as its first element.
+      // NOTE(mrmr1993): event.path has been renamed to event.deepPath in the spec, but this change is not
+      // yet implemented by Chrome.
+      let left;
+      return activatedElement = (left = (event.deepPath != null ? event.deepPath[0] : undefined) != null ? (event.deepPath != null ? event.deepPath[0] : undefined) : (event.path != null ? event.path[0] : undefined)) != null ? left : event.target;
     });
     handlerStack.push(handler);
     CoreScroller.init();
@@ -335,7 +346,7 @@ const Scroller = {
     if (factor == null) { factor = 1; }
     if (continuous == null) { continuous = true; }
     if (!getScrollingElement() && amount instanceof Number) {
-      if (direction === "x") {
+      if (direction === 'x') {
         window.scrollBy(amount, 0);
       } else {
         window.scrollBy(0, amount);
@@ -360,7 +371,7 @@ const Scroller = {
     if (!activatedElement) { return; }
 
     const element = findScrollableElement(activatedElement, direction, pos, 1);
-    const amount = getDimension(element,direction,pos) - element[scrollProperties[direction].axisName];
+    const amount = getDimension(element, direction, pos) - element[scrollProperties[direction].axisName];
     return CoreScroller.scroll(element, direction, amount);
   },
 
@@ -374,35 +385,35 @@ const Scroller = {
   // focus remains visible.
   scrollIntoView(element) {
     if (!activatedElement) { activatedElement = getScrollingElement() && firstScrollableElement(); }
-    const rect = __guard__(element. getClientRects(), x => x[0]);
+    const rect = __guard__(element.getClientRects(), (x) => x[0]);
     if (rect != null) {
       // Scroll y axis.
       let amount;
       if (rect.bottom < 0) {
         amount = rect.bottom - Math.min(rect.height, window.innerHeight);
-        element = findScrollableElement(element, "y", amount, 1);
-        CoreScroller.scroll(element, "y", amount, false);
+        element = findScrollableElement(element, 'y', amount, 1);
+        CoreScroller.scroll(element, 'y', amount, false);
       } else if (window.innerHeight < rect.top) {
         amount = rect.top + Math.min(rect.height - window.innerHeight, 0);
-        element = findScrollableElement(element, "y", amount, 1);
-        CoreScroller.scroll(element, "y", amount, false);
+        element = findScrollableElement(element, 'y', amount, 1);
+        CoreScroller.scroll(element, 'y', amount, false);
       }
 
       // Scroll x axis.
       if (rect.right < 0) {
         amount = rect.right - Math.min(rect.width, window.innerWidth);
-        element = findScrollableElement(element, "x", amount, 1);
-        return CoreScroller.scroll(element, "x", amount, false);
-      } else if (window.innerWidth < rect.left) {
+        element = findScrollableElement(element, 'x', amount, 1);
+        return CoreScroller.scroll(element, 'x', amount, false);
+      } if (window.innerWidth < rect.left) {
         amount = rect.left + Math.min(rect.width - window.innerWidth, 0);
-        element = findScrollableElement(element, "x", amount, 1);
-        return CoreScroller.scroll(element, "x", amount, false);
+        element = findScrollableElement(element, 'x', amount, 1);
+        return CoreScroller.scroll(element, 'x', amount, false);
       }
     }
-  }
+  },
 };
 
-var getSpecialScrollingElement = function() {
+var getSpecialScrollingElement = function () {
   const selector = specialScrollingElementMap[window.location.host];
   if (selector) {
     return document.querySelector(selector);
@@ -413,7 +424,7 @@ var specialScrollingElementMap = {
   'twitter.com': 'div.permalink-container div.permalink[role=main]',
   'reddit.com': '#overlayScrollContainer',
   'new.reddit.com': '#overlayScrollContainer',
-  'www.reddit.com': '#overlayScrollContainer'
+  'www.reddit.com': '#overlayScrollContainer',
 };
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));

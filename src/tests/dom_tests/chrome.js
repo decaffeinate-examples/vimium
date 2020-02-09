@@ -1,3 +1,8 @@
+/* eslint-disable
+    no-undef,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -13,46 +18,45 @@ root.chromeMessages = [];
 
 document.hasFocus = () => true;
 
-window.forTrusted = handler => handler;
+window.forTrusted = (handler) => handler;
 
-const fakeManifest =
-  {version: "1.51"};
+const fakeManifest = { version: '1.51' };
 
 root.chrome = {
   runtime: {
     connect() {
       return {
         onMessage: {
-          addListener() {}
+          addListener() {},
         },
         onDisconnect: {
-          addListener() {}
+          addListener() {},
         },
-        postMessage() {}
+        postMessage() {},
       };
     },
     onMessage: {
-      addListener() {}
+      addListener() {},
     },
     sendMessage(message) { return chromeMessages.unshift(message); },
     getManifest() { return fakeManifest; },
-    getURL(url) { return `../../${url}`; }
+    getURL(url) { return `../../${url}`; },
   },
   storage: {
     local: {
       get() {},
-      set() {}
+      set() {},
     },
     sync: {
       get(_, callback) { return (typeof callback === 'function' ? callback({}) : undefined); },
-      set() {}
+      set() {},
     },
     onChanged: {
-      addListener() {}
-    }
+      addListener() {},
+    },
   },
   extension: {
     inIncognitoContext: false,
-    getURL(url) { return chrome.runtime.getURL(url); }
-  }
+    getURL(url) { return chrome.runtime.getURL(url); },
+  },
 };

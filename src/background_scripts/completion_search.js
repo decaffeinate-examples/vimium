@@ -1,3 +1,21 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    func-names,
+    max-len,
+    new-cap,
+    no-console,
+    no-continue,
+    no-multi-assign,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-return-assign,
+    no-shadow,
+    no-undef,
+    no-useless-escape,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -25,22 +43,21 @@ class EnginePrefixWrapper {
     // This tests whether @searchUrl contains something of the form "...=abc+def+%s...", from which we extract
     // a prefix of the form "abc def ".
     if (/\=.+\+%s/.test(this.searchUrl)) {
-      let terms = this.searchUrl.replace(/\+%s.*/, "");
-      terms = terms.replace(/.*=/, "");
-      terms = terms.replace(/\+/g, " ");
+      let terms = this.searchUrl.replace(/\+%s.*/, '');
+      terms = terms.replace(/.*=/, '');
+      terms = terms.replace(/\+/g, ' ');
 
-      queryTerms = [ ...Array.from(terms.split(" ")), ...Array.from(queryTerms) ];
+      queryTerms = [...Array.from(terms.split(' ')), ...Array.from(queryTerms)];
       const prefix = `${terms} `;
 
-      this.postprocessSuggestions =
-        suggestions => (() => {
-          const result = [];
-          for (let suggestion of Array.from(suggestions)) {
-            if (!suggestion.startsWith(prefix)) { continue; }
-            result.push(suggestion.slice(prefix.length));
-          }
-          return result;
-        })();
+      this.postprocessSuggestions = (suggestions) => (() => {
+        const result = [];
+        for (const suggestion of Array.from(suggestions)) {
+          if (!suggestion.startsWith(prefix)) { continue; }
+          result.push(suggestion.slice(prefix.length));
+        }
+        return result;
+      })();
     }
 
     return this.engine.getUrl(queryTerms);
@@ -57,7 +74,7 @@ const CompletionSearch = {
   debug: false,
   inTransit: {},
   completionCache: new SimpleCache(2 * 60 * 60 * 1000, 5000), // Two hours, 5000 entries.
-  engineCache:new SimpleCache(1000 * 60 * 60 * 1000), // 1000 hours.
+  engineCache: new SimpleCache(1000 * 60 * 60 * 1000), // 1000 hours.
 
   // The amount of time to wait for new requests before launching the current request (for example, if the user
   // is still typing).
@@ -65,12 +82,12 @@ const CompletionSearch = {
 
   get(searchUrl, url, callback) {
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
+    xhr.open('GET', url, true);
     xhr.timeout = 2500;
     // According to https://xhr.spec.whatwg.org/#request-error-steps,
     // readystatechange always gets called whether a request succeeds or not,
     // and the `readyState == 4` means an associated `state` is "done", which is true even if any error happens
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         return callback(xhr.status === 200 ? xhr : null);
       }
@@ -83,11 +100,10 @@ const CompletionSearch = {
   lookupEngine(searchUrl) {
     if (this.engineCache.has(searchUrl)) {
       return this.engineCache.get(searchUrl);
-    } else {
-      for (let engine of Array.from(CompletionEngines)) {
-        engine = new engine();
-        if (engine.match(searchUrl)) { return this.engineCache.set(searchUrl, engine); }
-      }
+    }
+    for (let engine of Array.from(CompletionEngines)) {
+      engine = new engine();
+      if (engine.match(searchUrl)) { return this.engineCache.set(searchUrl, engine); }
     }
   },
 
@@ -109,21 +125,21 @@ const CompletionSearch = {
   //
   complete(searchUrl, queryTerms, callback = null) {
     let handler;
-    const query = queryTerms.join(" ").toLowerCase();
+    const query = queryTerms.join(' ').toLowerCase();
 
     const returnResultsOnlyFromCache = (callback == null);
-    if (callback == null) { callback = suggestions => suggestions; }
+    if (callback == null) { callback = (suggestions) => suggestions; }
 
     // We don't complete queries which are too short: the results are usually useless.
-    if (!(3 < query.length)) { return callback([]); }
+    if (!(query.length > 3)) { return callback([]); }
 
     // We don't complete regular URLs or Javascript URLs.
-    if ((1 === queryTerms.length) && Utils.isUrl(query)) { return callback([]); }
+    if ((queryTerms.length === 1) && Utils.isUrl(query)) { return callback([]); }
     if (Utils.hasJavascriptPrefix(query)) { return callback([]); }
 
-    const completionCacheKey = JSON.stringify([ searchUrl, queryTerms ]);
+    const completionCacheKey = JSON.stringify([searchUrl, queryTerms]);
     if (this.completionCache.has(completionCacheKey)) {
-      if (this.debug) { console.log("hit", completionCacheKey); }
+      if (this.debug) { console.log('hit', completionCacheKey); }
       return callback(this.completionCache.get(completionCacheKey));
     }
 
@@ -133,20 +149,20 @@ const CompletionSearch = {
       if (searchUrl === this.mostRecentSearchUrl) {
         const reusePreviousSuggestions = (() => {
           // Verify that the previous query is a prefix of the current query.
-          if (0 !== query.indexOf(this.mostRecentQuery.toLowerCase())) { return false; }
+          if (query.indexOf(this.mostRecentQuery.toLowerCase()) !== 0) { return false; }
           // Verify that every previous suggestion contains the text of the new query.
           // Note: @mostRecentSuggestions may also be empty, in which case we drop though. The effect is that
           // previous queries with no suggestions suppress subsequent no-hope HTTP requests as the user continues
           // to type.
-          for (let suggestion of Array.from(this.mostRecentSuggestions)) {
-            if (!(0 <= suggestion.indexOf(query))) { return false; }
+          for (const suggestion of Array.from(this.mostRecentSuggestions)) {
+            if (!(suggestion.indexOf(query) >= 0)) { return false; }
           }
           // Ok. Re-use the suggestion.
           return true;
         })();
 
         if (reusePreviousSuggestions) {
-          if (this.debug) { console.log("reuse previous query:", this.mostRecentQuery, this.mostRecentSuggestions.length); }
+          if (this.debug) { console.log('reuse previous query:', this.mostRecentQuery, this.mostRecentSuggestions.length); }
           return callback(this.completionCache.set(completionCacheKey, this.mostRecentSuggestions));
         }
       }
@@ -162,58 +178,61 @@ const CompletionSearch = {
         this.mostRecentHandler = null;
 
         // Elide duplicate requests. First fetch the suggestions...
-        if (this.inTransit[completionCacheKey] == null) { this.inTransit[completionCacheKey] = new AsyncDataFetcher(callback => {
-          const engine = new EnginePrefixWrapper(searchUrl, this.lookupEngine(searchUrl));
-          const url = engine.getUrl(queryTerms);
+        if (this.inTransit[completionCacheKey] == null) {
+          this.inTransit[completionCacheKey] = new AsyncDataFetcher((callback) => {
+            const engine = new EnginePrefixWrapper(searchUrl, this.lookupEngine(searchUrl));
+            const url = engine.getUrl(queryTerms);
 
-          return this.get(searchUrl, url, (xhr = null) => {
+            return this.get(searchUrl, url, (xhr = null) => {
             // Parsing the response may fail if we receive an unexpected or an unexpectedly-formatted response.
             // In all cases, we fall back to the catch clause, below.  Therefore, we "fail safe" in the case of
             // incorrect or out-of-date completion engines.
-            let suggestions;
-            let suggestion;
-            try {
-              suggestions = engine.parse(xhr);
-              // Make all suggestions lower case.  It looks odd when suggestions from one completion engine are
-              // upper case, and those from another are lower case.
-              suggestions = ((() => {
-                const result = [];
-                for (suggestion of Array.from(suggestions)) {                   result.push(suggestion.toLowerCase());
-                }
-                return result;
-              })());
-              // Filter out the query itself. It's not adding anything.
-              suggestions = ((() => {
-                const result1 = [];
-                for (suggestion of Array.from(suggestions)) {                   if (suggestion !== query) {
-                    result1.push(suggestion);
+              let suggestions;
+              let suggestion;
+              try {
+                suggestions = engine.parse(xhr);
+                // Make all suggestions lower case.  It looks odd when suggestions from one completion engine are
+                // upper case, and those from another are lower case.
+                suggestions = ((() => {
+                  const result = [];
+                  for (suggestion of Array.from(suggestions)) {
+                    result.push(suggestion.toLowerCase());
                   }
-                }
-                return result1;
-              })());
-              if (this.debug) { console.log("GET", url); }
-            } catch (error) {
-              suggestions = [];
-              // We allow failures to be cached too, but remove them after just thirty seconds.
-              Utils.setTimeout(30 * 1000, () => this.completionCache.set(completionCacheKey, null));
-              if (this.debug) { console.log("fail", url); }
-            }
+                  return result;
+                })());
+                // Filter out the query itself. It's not adding anything.
+                suggestions = ((() => {
+                  const result1 = [];
+                  for (suggestion of Array.from(suggestions)) {
+                    if (suggestion !== query) {
+                      result1.push(suggestion);
+                    }
+                  }
+                  return result1;
+                })());
+                if (this.debug) { console.log('GET', url); }
+              } catch (error) {
+                suggestions = [];
+                // We allow failures to be cached too, but remove them after just thirty seconds.
+                Utils.setTimeout(30 * 1000, () => this.completionCache.set(completionCacheKey, null));
+                if (this.debug) { console.log('fail', url); }
+              }
 
-            callback(suggestions);
-            return delete this.inTransit[completionCacheKey];
-        });
-      }); }
+              callback(suggestions);
+              return delete this.inTransit[completionCacheKey];
+            });
+          });
+        }
 
         // ... then use the suggestions.
-        return this.inTransit[completionCacheKey].use(suggestions => {
+        return this.inTransit[completionCacheKey].use((suggestions) => {
           this.mostRecentSearchUrl = searchUrl;
           this.mostRecentQuery = query;
           this.mostRecentSuggestions = suggestions;
           return callback(this.completionCache.set(completionCacheKey, suggestions));
         });
       }
-    }))
-    );
+    })));
   },
 
   // Cancel any pending (ie. blocked on @delay) queries.  Does not cancel in-flight queries.  This is called
@@ -221,9 +240,9 @@ const CompletionSearch = {
   cancel() {
     if (this.mostRecentHandler != null) {
       this.mostRecentHandler = null;
-      if (this.debug) { return console.log("cancel (user is typing)"); }
+      if (this.debug) { return console.log('cancel (user is typing)'); }
     }
-  }
+  },
 };
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : window;

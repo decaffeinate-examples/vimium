@@ -1,3 +1,11 @@
+/* eslint-disable
+    no-nested-ternary,
+    no-param-reassign,
+    no-undef,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,34 +14,34 @@
  */
 const Clipboard = {
   _createTextArea(tagName) {
-    if (tagName == null) { tagName = "textarea"; }
+    if (tagName == null) { tagName = 'textarea'; }
     const textArea = document.createElement(tagName);
-    textArea.style.position = "absolute";
-    textArea.style.left = "-100%";
-    textArea.contentEditable = "true";
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-100%';
+    textArea.contentEditable = 'true';
     return textArea;
   },
 
   // http://groups.google.com/group/chromium-extensions/browse_thread/thread/49027e7f3b04f68/f6ab2457dee5bf55
-  copy({data}) {
+  copy({ data }) {
     const textArea = this._createTextArea();
-    textArea.value = data.replace(/\xa0/g, " ");
+    textArea.value = data.replace(/\xa0/g, ' ');
 
     document.body.appendChild(textArea);
     textArea.select();
-    document.execCommand("Copy");
+    document.execCommand('Copy');
     return document.body.removeChild(textArea);
   },
 
   paste() {
-    const textArea = this._createTextArea("div"); // Use a <div> so Firefox pastes rich text.
+    const textArea = this._createTextArea('div'); // Use a <div> so Firefox pastes rich text.
     document.body.appendChild(textArea);
     textArea.focus();
-    document.execCommand("Paste");
+    document.execCommand('Paste');
     const value = textArea.innerText;
     document.body.removeChild(textArea);
-    return value.replace(/\xa0/g, " ");
-  }
+    return value.replace(/\xa0/g, ' ');
+  },
 };
 
 

@@ -1,3 +1,21 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    default-case,
+    max-len,
+    no-console,
+    no-nested-ternary,
+    no-new-object,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-return-assign,
+    no-undef,
+    no-underscore-dangle,
+    no-unused-expressions,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -45,7 +63,7 @@ class HandlerStack {
   // As above, except the new handler is added to the bottom of the stack.
   unshift(handler) {
     if (!handler._name) { handler._name = `anon-${this.counter}`; }
-    handler._name += "/unshift";
+    handler._name += '/unshift';
     this.stack.unshift(handler);
     return handler.id = ++this.counter;
   }
@@ -56,9 +74,9 @@ class HandlerStack {
   bubbleEvent(type, event) {
     this.eventNumber += 1;
     const {
-      eventNumber
+      eventNumber,
     } = this;
-    for (let handler of Array.from(this.stack.slice().reverse())) {
+    for (const handler of Array.from(this.stack.slice().reverse())) {
       // A handler might have been removed (handler.id == null), so check; or there might just be no handler
       // for this type of event.
       if (!(handler != null ? handler.id : undefined) || !handler[type]) {
@@ -69,21 +87,21 @@ class HandlerStack {
         if (this.debug) { this.logResult(eventNumber, type, event, handler, result); }
         if (result === this.passEventToPage) {
           return true;
-        } else if (result === this.suppressPropagation) {
-          if (type === "keydown") {
+        } if (result === this.suppressPropagation) {
+          if (type === 'keydown') {
             DomUtils.consumeKeyup(event, null, true);
           } else {
             DomUtils.suppressPropagation(event);
           }
           return false;
-        } else if (result === this.restartBubbling) {
+        } if (result === this.restartBubbling) {
           return this.bubbleEvent(type, event);
-        } else if ((result === this.continueBubbling) || (result && (result !== this.suppressEvent))) {
+        } if ((result === this.continueBubbling) || (result && (result !== this.suppressEvent))) {
           true; // Do nothing, but continue bubbling.
         } else {
           // result is @suppressEvent or falsy.
           if (this.isChromeEvent(event)) {
-            if (type === "keydown") {
+            if (type === 'keydown') {
               DomUtils.consumeKeyup(event);
             } else {
               DomUtils.suppressEvent(event);
@@ -134,30 +152,30 @@ class HandlerStack {
   }
 
   alwaysSuppressPropagation(handler = null) {
-    if ((typeof handler === 'function' ? handler() : undefined) === this.suppressEvent) { return this.suppressEvent; } else { return this.suppressPropagation; }
+    if ((typeof handler === 'function' ? handler() : undefined) === this.suppressEvent) { return this.suppressEvent; } return this.suppressPropagation;
   }
 
   // Debugging.
   logResult(eventNumber, type, event, handler, result) {
-    if ((event != null ? event.type : undefined) === "keydown") { // Tweak this as needed.
-      let label =
-        (() => { switch (result) {
-          case this.passEventToPage: return "passEventToPage";
-          case this.suppressEvent: return "suppressEvent";
-          case this.suppressPropagation: return "suppressPropagation";
-          case this.restartBubbling: return "restartBubbling";
-          case "skip": return "skip";
-          case true: return "continue";
-        } })();
-      if (!label) { label = result ? "continue/truthy" : "suppress"; }
+    if ((event != null ? event.type : undefined) === 'keydown') { // Tweak this as needed.
+      let label = (() => {
+        switch (result) {
+          case this.passEventToPage: return 'passEventToPage';
+          case this.suppressEvent: return 'suppressEvent';
+          case this.suppressPropagation: return 'suppressPropagation';
+          case this.restartBubbling: return 'restartBubbling';
+          case 'skip': return 'skip';
+          case true: return 'continue';
+        }
+      })();
+      if (!label) { label = result ? 'continue/truthy' : 'suppress'; }
       return console.log(`${eventNumber}`, type, handler._name, label);
     }
   }
 
   show() {
     console.log(`${this.eventNumber}:`);
-    return Array.from(this.stack.slice().reverse()).map((handler) =>
-      console.log("  ", handler._name));
+    return Array.from(this.stack.slice().reverse()).map((handler) => console.log('  ', handler._name));
   }
 
   // For tests only.

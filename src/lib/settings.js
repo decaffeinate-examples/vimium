@@ -1,3 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    max-len,
+    no-console,
+    no-empty,
+    no-nested-ternary,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-undef,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -23,7 +36,7 @@
 // We use "try" because this fails within iframes on Firefox (where failure doesn't actually matter).
 try { if (window.chrome == null) { window.chrome = window.top != null ? window.top.chrome : undefined; } } catch (error) {}
 
-let storageArea = (chrome.storage.sync != null) ? "sync" : "local";
+let storageArea = (chrome.storage.sync != null) ? 'sync' : 'local';
 
 const Settings = {
   debug: false,
@@ -46,18 +59,18 @@ const Settings = {
     // about:config. Every use sets chrome.runtime.lastError, so we use that to check whether we can use it.
     return chrome.storage.sync.get(null, () => {
       if (chrome.runtime.lastError) {
-        storageArea = "local";
+        storageArea = 'local';
         this.storage = chrome.storage[storageArea];
       }
 
       // Delay this initialisation until after the correct storage area is known.  The significance of this is
       // that it delays the on-loaded callbacks.
-      return chrome.storage.local.get(null, localItems => {
+      return chrome.storage.local.get(null, (localItems) => {
         if (chrome.runtime.lastError) { localItems = {}; }
-        return this.storage.get(null, syncedItems => {
+        return this.storage.get(null, (syncedItems) => {
           if (!chrome.runtime.lastError) {
             const object = extend(localItems, syncedItems);
-            for (let key of Object.keys(object || {})) { const value = object[key]; this.handleUpdateFromChromeStorage(key, value); }
+            for (const key of Object.keys(object || {})) { const value = object[key]; this.handleUpdateFromChromeStorage(key, value); }
           }
 
           chrome.storage.onChanged.addListener((changes, area) => {
@@ -77,7 +90,7 @@ const Settings = {
     this.isLoaded = true;
     return (() => {
       const result = [];
-      while (0 < this.onLoadedCallbacks.length) {
+      while (this.onLoadedCallbacks.length > 0) {
         result.push(this.onLoadedCallbacks.pop()());
       }
       return result;
@@ -85,17 +98,17 @@ const Settings = {
   },
 
   onLoaded(callback) {
-    if (this.isLoaded) { return callback(); } else { return this.onLoadedCallbacks.push(callback); }
+    if (this.isLoaded) { return callback(); } return this.onLoadedCallbacks.push(callback);
   },
 
   shouldSyncKey(key) {
-    return (key in this.defaults) && ![ "settingsVersion", "previousVersion" ].includes(key);
+    return (key in this.defaults) && !['settingsVersion', 'previousVersion'].includes(key);
   },
 
   propagateChangesFromChromeStorage(changes) {
     return (() => {
       const result = [];
-      for (let key of Object.keys(changes || {})) {
+      for (const key of Object.keys(changes || {})) {
         const change = changes[key];
         result.push(this.handleUpdateFromChromeStorage(key, change != null ? change.newValue : undefined));
       }
@@ -117,7 +130,7 @@ const Settings = {
 
   get(key) {
     if (!this.isLoaded) { console.log(`WARNING: Settings have not loaded yet; using the default value for ${key}.`); }
-    if (key in this.cache && (this.cache[key] != null)) { return JSON.parse(this.cache[key]); } else { return this.defaults[key]; }
+    if (key in this.cache && (this.cache[key] != null)) { return JSON.parse(this.cache[key]); } return this.defaults[key];
   },
 
   set(key, value, shouldSetInSyncedStorage) {
@@ -130,7 +143,7 @@ const Settings = {
         this.log(`   chrome.storage.${storageArea}.set(${key})`);
         this.storage.set(setting);
       }
-      if (Utils.isBackgroundPage() && (storageArea === "sync")) {
+      if (Utils.isBackgroundPage() && (storageArea === 'sync')) {
         // Remove options installed by the "copyNonDefaultsToChromeStorage-20150717" migration; see below.
         this.log(`   chrome.storage.local.remove(${key})`);
         chrome.storage.local.remove(key);
@@ -168,16 +181,16 @@ const Settings = {
 
   // For development only.
   log(...args) {
-    if (this.debug) { return console.log("settings:", ...Array.from(args)); }
+    if (this.debug) { return console.log('settings:', ...Array.from(args)); }
   },
 
   // Default values for all settings.
   defaults: {
     scrollStepSize: 60,
     smoothScroll: true,
-    keyMappings: "# Insert your preferred key mappings here.",
-    linkHintCharacters: "sadfjklewcmpgh",
-    linkHintNumbers: "0123456789",
+    keyMappings: '# Insert your preferred key mappings here.',
+    linkHintCharacters: 'sadfjklewcmpgh',
+    linkHintNumbers: '0123456789',
     filterLinkHints: false,
     hideHud: false,
     userDefinedLinkHintCss:
@@ -203,7 +216,7 @@ div > .vimiumHintMarker > .matchingCharacter {
     exclusionRules:
       [
         // Disable Vimium on Gmail.
-        { pattern: "https?://mail.google.com/*", passKeys: "" }
+        { pattern: 'https?://mail.google.com/*', passKeys: '' },
       ],
 
     // NOTE: If a page contains both a single angle-bracket link and a double angle-bracket link, then in
@@ -212,11 +225,11 @@ div > .vimiumHintMarker > .matchingCharacter {
     // for first.
 
     // "\bprev\b,\bprevious\b,\bback\b,<,‹,←,«,≪,<<"
-    previousPatterns: "prev,previous,back,older,<,\u2039,\u2190,\xab,\u226a,<<",
+    previousPatterns: 'prev,previous,back,older,<,\u2039,\u2190,\xab,\u226a,<<',
     // "\bnext\b,\bmore\b,>,›,→,»,≫,>>"
-    nextPatterns: "next,more,newer,>,\u203a,\u2192,\xbb,\u226b,>>",
+    nextPatterns: 'next,more,newer,>,\u203a,\u2192,\xbb,\u226b,>>',
     // default/fall back search engine
-    searchUrl: "https://www.google.com/search?q=",
+    searchUrl: 'https://www.google.com/search?q=',
     // put in an example search engine
     searchEngines:
       `\
@@ -236,39 +249,39 @@ w: https://www.wikipedia.org/w/index.php?title=Special:Search&search=%s Wikipedi
 # az: https://www.amazon.com/s/?field-keywords=%s Amazon
 # qw: https://www.qwant.com/?q=%s Qwant\
 `,
-    newTabUrl: "about:newtab",
+    newTabUrl: 'about:newtab',
     grabBackFocus: false,
     regexFindMode: false,
     waitForEnterForFilteredHints: false, // Note: this defaults to true for new users; see below.
 
-    settingsVersion: "",
+    settingsVersion: '',
     helpDialog_showAdvancedCommands: false,
     optionsPage_showAdvancedOptions: false,
     passNextKeyKeys: [],
-    ignoreKeyboardLayout: false
-  }
+    ignoreKeyboardLayout: false,
+  },
 };
 
 Settings.init();
 
 // Perform migration from old settings versions, if this is the background page.
 if (Utils.isBackgroundPage()) {
-  Settings.applyMigrations = function() {
-    if (!Settings.get("settingsVersion")) {
+  Settings.applyMigrations = function () {
+    if (!Settings.get('settingsVersion')) {
       // This is a new install.  For some settings, we retain a legacy default behaviour for existing users but
       // use a non-default behaviour for new users.
 
       // For waitForEnterForFilteredHints, "true" gives a better UX; see #1950.  However, forcing the change on
       // existing users would be unnecessarily disruptive.  So, only new users default to "true".
-      Settings.set("waitForEnterForFilteredHints", true);
+      Settings.set('waitForEnterForFilteredHints', true);
     }
 
     // We use settingsVersion to coordinate any necessary schema changes.
-    Settings.set("settingsVersion", Utils.getCurrentVersion());
+    Settings.set('settingsVersion', Utils.getCurrentVersion());
 
     // Remove legacy key which was used to control storage migration.  This was after 1.57 (2016-10-01), and can
     // be removed after 1.58 has been out for sufficiently long.
-    return Settings.nuke("copyNonDefaultsToChromeStorage-20150717");
+    return Settings.nuke('copyNonDefaultsToChromeStorage-20150717');
   };
 
   Settings.onLoaded(Settings.applyMigrations.bind(Settings));

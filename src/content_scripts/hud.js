@@ -1,3 +1,17 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    max-len,
+    no-multi-assign,
+    no-nested-ternary,
+    no-param-reassign,
+    no-return-assign,
+    no-undef,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -23,8 +37,8 @@ const HUD = {
   // it doesn't sit on top of horizontal scrollbars like Chrome's HUD does.
 
   init() {
-    if (this.hudUI == null) { this.hudUI = new UIComponent("pages/hud.html", "vimiumHUDFrame", ({data}) => (typeof this[data.name] === 'function' ? this[data.name](data) : undefined)); }
-    return this.tween != null ? this.tween : (this.tween = new Tween("iframe.vimiumHUDFrame.vimiumUIComponentVisible", this.hudUI.shadowDOM));
+    if (this.hudUI == null) { this.hudUI = new UIComponent('pages/hud.html', 'vimiumHUDFrame', ({ data }) => (typeof this[data.name] === 'function' ? this[data.name](data) : undefined)); }
+    return this.tween != null ? this.tween : (this.tween = new Tween('iframe.vimiumHUDFrame.vimiumUIComponentVisible', this.hudUI.shadowDOM));
   },
 
   showForDuration(text, duration) {
@@ -36,7 +50,7 @@ const HUD = {
     return DomUtils.documentComplete(() => {
       this.init();
       clearTimeout(this._showForDurationTimerId);
-      this.hudUI.activate({name: "show", text});
+      this.hudUI.activate({ name: 'show', text });
       return this.tween.fade(1.0, 150);
     });
   },
@@ -45,8 +59,8 @@ const HUD = {
     this.findMode = findMode;
     return DomUtils.documentComplete(() => {
       this.init();
-      this.hudUI.toggleIframeElementClasses("vimiumUIComponentHidden", "vimiumUIComponentVisible");
-      this.hudUI.activate({name: "showFindMode"});
+      this.hudUI.toggleIframeElementClasses('vimiumUIComponentHidden', 'vimiumUIComponentVisible');
+      this.hudUI.activate({ name: 'showFindMode' });
       return this.tween.fade(1.0, 150);
     });
   },
@@ -54,12 +68,12 @@ const HUD = {
   search(data) {
     // NOTE(mrmr1993): On Firefox, window.find moves the window focus away from the HUD. We use postFindFocus
     // to put it back, so the user can continue typing.
-    this.findMode.findInPlace(data.query, {"postFindFocus": this.hudUI.iframeElement.contentWindow});
+    this.findMode.findInPlace(data.query, { postFindFocus: this.hudUI.iframeElement.contentWindow });
 
     // Show the number of matches in the HUD UI.
     const matchCount = FindMode.query.parsedQuery.length > 0 ? FindMode.query.matchCount : 0;
     const showMatchText = FindMode.query.rawQuery.length > 0;
-    return this.hudUI.postMessage({name: "updateMatchesCount", matchCount, showMatchText});
+    return this.hudUI.postMessage({ name: 'updateMatchesCount', matchCount, showMatchText });
   },
 
   // Hide the HUD.
@@ -73,15 +87,14 @@ const HUD = {
       clearTimeout(this._showForDurationTimerId);
       this.tween.stop();
       if (immediate) {
-        if (updateIndicator) { return Mode.setIndicator(); } else { return this.hudUI.hide(); }
-      } else {
-        return this.tween.fade(0, 150, () => this.hide(true, updateIndicator));
+        if (updateIndicator) { return Mode.setIndicator(); } return this.hudUI.hide();
       }
+      return this.tween.fade(0, 150, () => this.hide(true, updateIndicator));
     }
   },
 
   // These parameters describe the reason find mode is exiting, and come from the HUD UI component.
-  hideFindMode({exitEventIsEnter, exitEventIsEscape}) {
+  hideFindMode({ exitEventIsEnter, exitEventIsEscape }) {
     let postExit;
     this.findMode.checkReturnToViewPort();
 
@@ -94,12 +107,12 @@ const HUD = {
     if (document.activeElement != null) {
       document.activeElement.blur();
     }
-    __guardMethod__(focusNode, 'focus', o => o.focus());
+    __guardMethod__(focusNode, 'focus', (o) => o.focus());
 
     if (exitEventIsEnter) {
       FindMode.handleEnter();
       if (FindMode.query.hasResults) {
-        postExit = () => new PostFindMode;
+        postExit = () => new PostFindMode();
       }
     } else if (exitEventIsEscape) {
       // We don't want FindMode to handle the click events that FindMode.handleEscape can generate, so we
@@ -120,9 +133,9 @@ const HUD = {
     return DomUtils.documentComplete(() => {
       this.init();
       // Chrome 74 only acknowledges text selection when a frame has been visible. See more in #3277 .
-      this.hudUI.toggleIframeElementClasses("vimiumUIComponentHidden", "vimiumUIComponentVisible");
-      return this.hudUI.postMessage({name: "copyToClipboard", data: text});
-  });
+      this.hudUI.toggleIframeElementClasses('vimiumUIComponentHidden', 'vimiumUIComponentVisible');
+      return this.hudUI.postMessage({ name: 'copyToClipboard', data: text });
+    });
   },
 
   pasteFromClipboard(pasteListener) {
@@ -130,15 +143,15 @@ const HUD = {
     return DomUtils.documentComplete(() => {
       this.init();
       // Show the HUD frame, so Firefox will actually perform the paste.
-      this.hudUI.toggleIframeElementClasses("vimiumUIComponentHidden", "vimiumUIComponentVisible");
+      this.hudUI.toggleIframeElementClasses('vimiumUIComponentHidden', 'vimiumUIComponentVisible');
       this.tween.fade(0, 0);
-      return this.hudUI.postMessage({name: "pasteFromClipboard"});
-  });
+      return this.hudUI.postMessage({ name: 'pasteFromClipboard' });
+    });
   },
 
-  pasteResponse({data}) {
+  pasteResponse({ data }) {
     // Hide the HUD frame again.
-    this.hudUI.toggleIframeElementClasses("vimiumUIComponentVisible", "vimiumUIComponentHidden");
+    this.hudUI.toggleIframeElementClasses('vimiumUIComponentVisible', 'vimiumUIComponentHidden');
     this.unfocusIfFocused();
     return this.pasteListener(data);
   },
@@ -150,7 +163,7 @@ const HUD = {
       this.hudUI.iframeElement.blur();
       return window.focus();
     }
-  }
+  },
 };
 
 class Tween {
@@ -163,16 +176,16 @@ class Tween {
   constructor(cssSelector, insertionPoint) {
     this.cssSelector = cssSelector;
     if (insertionPoint == null) { insertionPoint = document.documentElement; }
-    this.styleElement = DomUtils.createElement("style");
+    this.styleElement = DomUtils.createElement('style');
 
     if (!this.styleElement.style) {
       // We're in an XML document, so we shouldn't inject any elements. See the comment in UIComponent.
-      Tween.prototype.fade = (Tween.prototype.stop = (Tween.prototype.updateStyle = function() {}));
+      Tween.prototype.fade = (Tween.prototype.stop = (Tween.prototype.updateStyle = function () {}));
       return;
     }
 
-    this.styleElement.type = "text/css";
-    this.styleElement.innerHTML = "";
+    this.styleElement.type = 'text/css';
+    this.styleElement.innerHTML = '';
     insertionPoint.appendChild(this.styleElement);
   }
 
@@ -188,10 +201,9 @@ class Tween {
         clearInterval(this.intervalId);
         this.updateStyle(toAlpha);
         return (typeof onComplete === 'function' ? onComplete() : undefined);
-      } else {
-        const value = ((elapsed / duration) * alphaStep) + fromAlpha;
-        return this.updateStyle(value);
       }
+      const value = ((elapsed / duration) * alphaStep) + fromAlpha;
+      return this.updateStyle(value);
     };
 
     this.updateStyle(this.opacity);
@@ -218,7 +230,6 @@ if (typeof exports === 'undefined' || exports === null) { extend(window, root); 
 function __guardMethod__(obj, methodName, transform) {
   if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
     return transform(obj, methodName);
-  } else {
-    return undefined;
   }
+  return undefined;
 }

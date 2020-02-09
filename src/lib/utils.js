@@ -1,3 +1,28 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    max-classes-per-file,
+    max-len,
+    no-empty,
+    no-extend-native,
+    no-nested-ternary,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-return-assign,
+    no-script-url,
+    no-shadow,
+    no-undef,
+    no-underscore-dangle,
+    no-unused-vars,
+    no-use-before-define,
+    no-useless-escape,
+    no-var,
+    prefer-rest-params,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -12,91 +37,92 @@
  */
 // Only pass events to the handler if they are marked as trusted by the browser.
 // This is kept in the global namespace for brevity and ease of use.
-if (window.forTrusted == null) { window.forTrusted = handler => (function(event) {
-  if ((event != null ? event.isTrusted : undefined)) {
-    return handler.apply(this, arguments);
-  } else {
+if (window.forTrusted == null) {
+  window.forTrusted = (handler) => (function (event) {
+    if ((event != null ? event.isTrusted : undefined)) {
+      return handler.apply(this, arguments);
+    }
     return true;
-  }
-}); }
+  });
+}
 
-const browserInfo = __guardMethod__(typeof browser !== 'undefined' && browser !== null ? browser.runtime : undefined, 'getBrowserInfo', o => o.getBrowserInfo());
+const browserInfo = __guardMethod__(typeof browser !== 'undefined' && browser !== null ? browser.runtime : undefined, 'getBrowserInfo', (o) => o.getBrowserInfo());
 
 var Utils = {
-  isFirefox: (function() {
+  isFirefox: (function () {
     // NOTE(mrmr1993): This test only works in the background page, this is overwritten by isEnabledForUrl for
     // content scripts, and the "settings" message from UIComponent is for pages like HUD.
     let isFirefox = false;
-    __guardMethod__(browserInfo, 'then', o1 => o1.then(browserInfo => isFirefox = (browserInfo != null ? browserInfo.name : undefined) === "Firefox"));
+    __guardMethod__(browserInfo, 'then', (o1) => o1.then((browserInfo) => isFirefox = (browserInfo != null ? browserInfo.name : undefined) === 'Firefox'));
     return () => isFirefox;
-  })(),
-  firefoxVersion: (function() {
+  }()),
+  firefoxVersion: (function () {
     // NOTE(mrmr1993): This only works in the background page.
-    let ffVersion = undefined;
-    __guardMethod__(browserInfo, 'then', o1 => o1.then(browserInfo => ffVersion = browserInfo != null ? browserInfo.version : undefined));
+    let ffVersion;
+    __guardMethod__(browserInfo, 'then', (o1) => o1.then((browserInfo) => ffVersion = browserInfo != null ? browserInfo.version : undefined));
     return () => ffVersion;
-  })(),
+  }()),
   getCurrentVersion() {
     return chrome.runtime.getManifest().version;
   },
 
   // Returns true whenever the current page (or the page supplied as an argument) is from the extension's
   // origin (and thus can access the extension's localStorage).
-  isExtensionPage(win) { if (win == null) { win = window; } try { return ((win.document.location != null ? win.document.location.origin : undefined) + "/") === chrome.extension.getURL(""); } catch (error) {} },
+  isExtensionPage(win) { if (win == null) { win = window; } try { return (`${win.document.location != null ? win.document.location.origin : undefined}/`) === chrome.extension.getURL(''); } catch (error) {} },
 
   // Returns true whenever the current page is the extension's background page.
   isBackgroundPage() { return this.isExtensionPage() && ((typeof chrome.extension.getBackgroundPage === 'function' ? chrome.extension.getBackgroundPage() : undefined) === window); },
 
   // Escape all special characters, so RegExp will parse the string 'as is'.
   // Taken from http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-  escapeRegexSpecialCharacters: (function() {
+  escapeRegexSpecialCharacters: (function () {
     const escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
-    return str => str.replace(escapeRegex, "\\$&");
-  })(),
+    return (str) => str.replace(escapeRegex, '\\$&');
+  }()),
 
-  escapeHtml(string) { return string.replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
+  escapeHtml(string) { return string.replace(/</g, '&lt;').replace(/>/g, '&gt;'); },
 
   // Generates a unique ID
-  createUniqueId: (function() {
+  createUniqueId: (function () {
     let id = 0;
     return () => id += 1;
-  })(),
+  }()),
 
-  hasChromePrefix: (function() {
-    const chromePrefixes = [ "about:", "view-source:", "extension:", "chrome-extension:", "data:" ];
-    return function(url) {
-      for (let prefix of Array.from(chromePrefixes)) {
+  hasChromePrefix: (function () {
+    const chromePrefixes = ['about:', 'view-source:', 'extension:', 'chrome-extension:', 'data:'];
+    return function (url) {
+      for (const prefix of Array.from(chromePrefixes)) {
         if (url.startsWith(prefix)) { return true; }
       }
       return false;
     };
-  })(),
+  }()),
 
   hasJavascriptPrefix(url) {
-    return url.startsWith("javascript:");
+    return url.startsWith('javascript:');
   },
 
-  hasFullUrlPrefix: (function() {
-    const urlPrefix = new RegExp("^[a-z][-+.a-z0-9]{2,}://.");
-    return url => urlPrefix.test(url);
-  })(),
+  hasFullUrlPrefix: (function () {
+    const urlPrefix = new RegExp('^[a-z][-+.a-z0-9]{2,}://.');
+    return (url) => urlPrefix.test(url);
+  }()),
 
   // Decode valid escape sequences in a URI.  This is intended to mimic the best-effort decoding
   // Chrome itself seems to apply when a Javascript URI is enetered into the omnibox (or clicked).
   // See https://code.google.com/p/chromium/issues/detail?id=483000, #1611 and #1636.
   decodeURIByParts(uri) {
-    return uri.split(/(?=%)/).map(function(uriComponent) {
+    return uri.split(/(?=%)/).map((uriComponent) => {
       try {
         return decodeURIComponent(uriComponent);
       } catch (error) {
         return uriComponent;
       }
-    }).join("");
+    }).join('');
   },
 
   // Completes a partial URL (without scheme)
   createFullUrl(partialUrl) {
-    if (this.hasFullUrlPrefix(partialUrl)) { return partialUrl; } else { return ("http://" + partialUrl); }
+    if (this.hasFullUrlPrefix(partialUrl)) { return partialUrl; } return (`http://${partialUrl}`);
   },
 
   // Tries to detect if :str is a valid URL.
@@ -109,10 +135,10 @@ var Utils = {
 
     // More or less RFC compliant URL host part parsing. This should be sufficient for our needs
     const urlRegex = new RegExp(
-      '^(?:([^:]+)(?::([^:]+))?@)?' + // user:password (optional) => \1, \2
-      '([^:]+|\\[[^\\]]+\\])'       + // host name (IPv6 addresses in square brackets allowed) => \3
-      '(?::(\\d+))?$'                 // port number (optional) => \4
-      );
+      '^(?:([^:]+)(?::([^:]+))?@)?' // user:password (optional) => \1, \2
+      + '([^:]+|\\[[^\\]]+\\])' // host name (IPv6 addresses in square brackets allowed) => \3
+      + '(?::(\\d+))?$', // port number (optional) => \4
+    );
 
     // Official ASCII TLDs that are longer than 3 characters + inofficial .onion TLD used by TOR
     const longTlds = ['arpa', 'asia', 'coop', 'info', 'jobs', 'local', 'mobi', 'museum', 'name', 'onion'];
@@ -138,7 +164,7 @@ var Utils = {
 
     if (dottedParts.length > 1) {
       const lastPart = dottedParts.pop();
-      if ((2 <= lastPart.length && lastPart.length <= 3) || Array.from(longTlds).includes(lastPart)) { return true; }
+      if ((lastPart.length >= 2 && lastPart.length <= 3) || Array.from(longTlds).includes(lastPart)) { return true; }
     }
 
     // Allow IPv4 addresses
@@ -151,16 +177,16 @@ var Utils = {
   // Map a search query to its URL encoded form. The query may be either a string or an array of strings.
   // E.g. "BBC Sport" -> "BBC+Sport".
   createSearchQuery(query) {
-    if (typeof(query) === "string") { query = query.split(/\s+/); }
-    return query.map(encodeURIComponent).join("+");
+    if (typeof (query) === 'string') { query = query.split(/\s+/); }
+    return query.map(encodeURIComponent).join('+');
   },
 
   // Create a search URL from the given :query (using either the provided search URL, or the default one).
   // It would be better to pull the default search engine from chrome itself.  However, chrome does not provide
   // an API for doing so.
   createSearchUrl(query, searchUrl) {
-    if (searchUrl == null) { searchUrl = Settings.get("searchUrl"); }
-    if (!['%s', '%S'].some(token => searchUrl.indexOf(token) >= 0)) { searchUrl += "%s"; }
+    if (searchUrl == null) { searchUrl = Settings.get('searchUrl'); }
+    if (!['%s', '%S'].some((token) => searchUrl.indexOf(token) >= 0)) { searchUrl += '%s'; }
     searchUrl = searchUrl.replace(/%S/g, query);
     return searchUrl.replace(/%s/g, this.createSearchQuery(query));
   },
@@ -168,22 +194,22 @@ var Utils = {
   // Extract a query from url if it appears to be a URL created from the given search URL.
   // For example, map "https://www.google.ie/search?q=star+wars&foo&bar" to "star wars".
   extractQuery: (() => {
-    const queryTerminator = new RegExp("[?&#/]");
-    const httpProtocolRegexp = new RegExp("^https?://");
-    return function(searchUrl, url) {
+    const queryTerminator = new RegExp('[?&#/]');
+    const httpProtocolRegexp = new RegExp('^https?://');
+    return function (searchUrl, url) {
       let suffixTerms;
       url = url.replace(httpProtocolRegexp);
       searchUrl = searchUrl.replace(httpProtocolRegexp);
-      [ searchUrl, ...suffixTerms ] = Array.from(searchUrl.split("%s"));
+      [searchUrl, ...suffixTerms] = Array.from(searchUrl.split('%s'));
       // We require the URL to start with the search URL.
       if (!url.startsWith(searchUrl)) { return null; }
       // We require any remaining terms in the search URL to also be present in the URL.
-      for (let suffix of Array.from(suffixTerms)) {
-        if (!(0 <= url.indexOf(suffix))) { return null; }
+      for (const suffix of Array.from(suffixTerms)) {
+        if (!(url.indexOf(suffix) >= 0)) { return null; }
       }
       // We use try/catch because decodeURIComponent can throw an exception.
       try {
-          return url.slice(searchUrl.length).split(queryTerminator)[0].split("+").map(decodeURIComponent).join(" ");
+        return url.slice(searchUrl.length).split(queryTerminator)[0].split('+').map(decodeURIComponent).join(' ');
       } catch (error) {
         return null;
       }
@@ -198,14 +224,13 @@ var Utils = {
     // Special-case about:[url], view-source:[url] and the like
     if (Utils.hasChromePrefix(string)) {
       return string;
-    } else if (Utils.hasJavascriptPrefix(string)) {
+    } if (Utils.hasJavascriptPrefix(string)) {
       // In Chrome versions older than 46.0.2467.2, encoded javascript URIs weren't handled correctly.
-      if (Utils.haveChromeVersion("46.0.2467.2")) { return string; } else { return Utils.decodeURIByParts(string); }
-    } else if (Utils.isUrl(string)) {
+      if (Utils.haveChromeVersion('46.0.2467.2')) { return string; } return Utils.decodeURIByParts(string);
+    } if (Utils.isUrl(string)) {
       return Utils.createFullUrl(string);
-    } else {
-      return Utils.createSearchUrl(string);
     }
+    return Utils.createSearchUrl(string);
   },
 
   // detects both literals and dynamically created strings
@@ -213,30 +238,30 @@ var Utils = {
 
   // Transform "zjkjkabz" into "abjkz".
   distinctCharacters(str) {
-    const chars = str.split("").sort();
+    const chars = str.split('').sort();
     return ((() => {
       const result = [];
       for (let index = 0; index < chars.length; index++) {
         const ch = chars[index];
-        if ((index === 0) || (ch !== chars[index-1])) {
+        if ((index === 0) || (ch !== chars[index - 1])) {
           result.push(ch);
         }
       }
       return result;
-    })()).join("");
+    })()).join('');
   },
 
   // Compares two version strings (e.g. "1.1" and "1.5") and returns
   // -1 if versionA is < versionB, 0 if they're equal, and 1 if versionA is > versionB.
   compareVersions(versionA, versionB) {
-    versionA = versionA.split(".");
-    versionB = versionB.split(".");
-    for (let i = 0, end = Math.max(versionA.length, versionB.length), asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+    versionA = versionA.split('.');
+    versionB = versionB.split('.');
+    for (let i = 0, end = Math.max(versionA.length, versionB.length), asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
       const a = parseInt(versionA[i] || 0, 10);
       const b = parseInt(versionB[i] || 0, 10);
       if (a < b) {
         return -1;
-      } else if (a > b) {
+      } if (a > b) {
         return 1;
       }
     }
@@ -245,8 +270,8 @@ var Utils = {
 
   // True if the current Chrome version is at least the required version.
   haveChromeVersion(required) {
-    const chromeVersion = __guard__(navigator.appVersion.match(/Chrom(e|ium)\/(.*?) /), x => x[2]);
-    return chromeVersion && (0 <= Utils.compareVersions(chromeVersion, required));
+    const chromeVersion = __guard__(navigator.appVersion.match(/Chrom(e|ium)\/(.*?) /), (x) => x[2]);
+    return chromeVersion && (Utils.compareVersions(chromeVersion, required) >= 0);
   },
 
   // Zip two (or more) arrays:
@@ -254,7 +279,7 @@ var Utils = {
   //   - Length of result is `arrays[0].length`.
   //   - Adapted from: http://stackoverflow.com/questions/4856717/javascript-equivalent-of-pythons-zip-function
   zip(arrays) {
-    return arrays[0].map((_, i) => arrays.map( array => array[i]));
+    return arrays[0].map((_, i) => arrays.map((array) => array[i]));
   },
 
   // locale-sensitive uppercase detection
@@ -262,7 +287,7 @@ var Utils = {
 
   // Does string match any of these regexps?
   matchesAnyRegexp(regexps, string) {
-    for (let re of Array.from(regexps)) {
+    for (const re of Array.from(regexps)) {
       if (re.test(string)) { return true; }
     }
     return false;
@@ -276,39 +301,42 @@ var Utils = {
 
   // Make an idempotent function.
   makeIdempotent(func) {
-    return function(...args) { let previousFunc, ref;
-    return __guardMethod__(([previousFunc, func] = Array.from(ref = [func, null]), ref), 0, (o1, m) => o1[m](...Array.from(args || []))); };
+    return function (...args) {
+      let previousFunc; let
+        ref;
+      return __guardMethod__(([previousFunc, func] = Array.from(ref = [func, null]), ref), 0, (o1, m) => o1[m](...Array.from(args || [])));
+    };
   },
 
   monitorChromeStorage(key, setter) {
     // NOTE: "?" here for the tests.
-    return (typeof chrome !== 'undefined' && chrome !== null ? chrome.storage.local.get(key, obj => {
+    return (typeof chrome !== 'undefined' && chrome !== null ? chrome.storage.local.get(key, (obj) => {
       if (obj[key] != null) { setter(obj[key]); }
       return chrome.storage.onChanged.addListener((changes, area) => {
         if ((changes[key] != null ? changes[key].newValue : undefined) != null) { return setter(changes[key].newValue); }
       });
     }) : undefined);
-  }
+  },
 };
 
 // This creates a new function out of an existing function, where the new function takes fewer arguments. This
 // allows us to pass around functions instead of functions + a partial list of arguments.
-Function.prototype.curry = function() {
+Function.prototype.curry = function () {
   const fixedArguments = Array.copy(arguments);
   const fn = this;
-  return function() { return fn.apply(this, fixedArguments.concat(Array.copy(arguments))); };
+  return function () { return fn.apply(this, fixedArguments.concat(Array.copy(arguments))); };
 };
 
-Array.copy = array => Array.prototype.slice.call(array, 0);
+Array.copy = (array) => Array.prototype.slice.call(array, 0);
 
-String.prototype.startsWith = function(str) { return this.indexOf(str) === 0; };
-String.prototype.ltrim = function() { return this.replace(/^\s+/, ""); };
-String.prototype.rtrim = function() { return this.replace(/\s+$/, ""); };
-String.prototype.reverse = function() { return this.split("").reverse().join(""); };
+String.prototype.startsWith = function (str) { return this.indexOf(str) === 0; };
+String.prototype.ltrim = function () { return this.replace(/^\s+/, ''); };
+String.prototype.rtrim = function () { return this.replace(/\s+$/, ''); };
+String.prototype.reverse = function () { return this.split('').reverse().join(''); };
 
 const globalRoot = typeof window !== 'undefined' && window !== null ? window : global;
-globalRoot.extend = function(hash1, hash2) {
-  for (let key of Object.keys(hash2 || {})) {
+globalRoot.extend = function (hash1, hash2) {
+  for (const key of Object.keys(hash2 || {})) {
     hash1[key] = hash2[key];
   }
   return hash1;
@@ -340,23 +368,21 @@ class SimpleCache {
     delete this.previous[key];
     if (value != null) {
       return this.cache[key] = value;
-    } else {
-      delete this.cache[key];
-      return null;
     }
+    delete this.cache[key];
+    return null;
   }
 
   get(key) {
     this.rotate();
     if (key in this.cache) {
       return this.cache[key];
-    } else if (key in this.previous) {
+    } if (key in this.previous) {
       this.cache[key] = this.previous[key];
       delete this.previous[key];
       return this.cache[key];
-    } else {
-      return null;
     }
+    return null;
   }
 
   rotate(force) {
@@ -367,7 +393,7 @@ class SimpleCache {
         this.previous = this.cache;
         return this.cache = {};
       }
-  });
+    });
   }
 
   clear() {
@@ -383,17 +409,15 @@ class AsyncDataFetcher {
   constructor(fetch) {
     this.data = null;
     this.queue = [];
-    Utils.nextTick(() => {
-      return fetch(data => {
-        this.data = data;
-        for (let callback of Array.from(this.queue)) { callback(this.data); }
-        return this.queue = null;
-      });
-    });
+    Utils.nextTick(() => fetch((data) => {
+      this.data = data;
+      for (const callback of Array.from(this.queue)) { callback(this.data); }
+      return this.queue = null;
+    }));
   }
 
   use(callback) {
-    if (this.data != null) { return callback(this.data); } else { return this.queue.push(callback); }
+    if (this.data != null) { return callback(this.data); } return this.queue.push(callback);
   }
 }
 
@@ -402,17 +426,10 @@ class AsyncDataFetcher {
 class JobRunner {
   constructor(jobs) {
     this.jobs = jobs;
-    this.fetcher = new AsyncDataFetcher(callback => {
-      return Array.from(this.jobs).map((job) =>
-        (job => {
-          return Utils.nextTick(() => {
-            return job(() => {
-              this.jobs = this.jobs.filter(j => j !== job);
-              if (this.jobs.length === 0) { return callback(true); }
-            });
-          });
-        })(job));
-    });
+    this.fetcher = new AsyncDataFetcher((callback) => Array.from(this.jobs).map((job) => ((job) => Utils.nextTick(() => job(() => {
+      this.jobs = this.jobs.filter((j) => j !== job);
+      if (this.jobs.length === 0) { return callback(true); }
+    })))(job)));
   }
 
   onReady(callback) {
@@ -433,9 +450,8 @@ if (typeof exports === 'undefined' || exports === null) {
 function __guardMethod__(obj, methodName, transform) {
   if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
     return transform(obj, methodName);
-  } else {
-    return undefined;
   }
+  return undefined;
 }
 function __guard__(value, transform) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;

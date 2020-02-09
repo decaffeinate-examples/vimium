@@ -1,3 +1,19 @@
+/* eslint-disable
+    constructor-super,
+    func-names,
+    max-len,
+    no-constant-condition,
+    no-eval,
+    no-nested-ternary,
+    no-param-reassign,
+    no-plusplus,
+    no-return-assign,
+    no-this-before-super,
+    no-undef,
+    radix,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS001: Remove Babel/TypeScript constructor workaround
@@ -21,7 +37,9 @@
 
 class KeyHandlerMode extends Mode {
   setKeyMapping(keyMapping) { this.keyMapping = keyMapping; return this.reset(); }
+
   setPassKeys(passKeys) { this.passKeys = passKeys; return this.reset(); }
+
   // Only for tests.
   setCommandHandler(commandHandler) {
     this.commandHandler = commandHandler;
@@ -38,30 +56,28 @@ class KeyHandlerMode extends Mode {
     {
       // Hack: trick Babel/TypeScript into allowing this before super.
       if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
+      const thisFn = (() => this).toString();
+      const thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
       eval(`${thisName} = this;`);
     }
-    this.commandHandler = options.commandHandler != null ? options.commandHandler : (function() {});
+    this.commandHandler = options.commandHandler != null ? options.commandHandler : (function () {});
     this.setKeyMapping(options.keyMapping != null ? options.keyMapping : {});
 
     super(extend(options,
-      {keydown: this.onKeydown.bind(this)})
-    );
+      { keydown: this.onKeydown.bind(this) }));
 
     if (options.exitOnEscape) {
       // If we're part way through a command's key sequence, then a first Escape should reset the key state,
       // and only a second Escape should actually exit this mode.
       this.push({
-        _name: "key-handler-escape-listener",
-        keydown: event => {
+        _name: 'key-handler-escape-listener',
+        keydown: (event) => {
           if (KeyboardUtils.isEscape(event) && !this.isInResetState()) {
             this.reset();
             return this.suppressEvent;
-          } else {
-            return this.continueBubbling;
           }
-        }
+          return this.continueBubbling;
+        },
       });
     }
   }
@@ -72,22 +88,21 @@ class KeyHandlerMode extends Mode {
     if (isEscape && ((this.countPrefix !== 0) || (this.keyState.length !== 1))) {
       return DomUtils.consumeKeyup(event, () => this.reset());
     // If the help dialog loses the focus, then Escape should hide it; see point 2 in #2045.
-    } else if (isEscape && (typeof HelpDialog !== 'undefined' && HelpDialog !== null ? HelpDialog.isShowing() : undefined)) {
+    } if (isEscape && (typeof HelpDialog !== 'undefined' && HelpDialog !== null ? HelpDialog.isShowing() : undefined)) {
       HelpDialog.toggle();
       return this.suppressEvent;
-    } else if (isEscape) {
+    } if (isEscape) {
       return this.continueBubbling;
-    } else if (this.isMappedKey(keyChar)) {
+    } if (this.isMappedKey(keyChar)) {
       this.handleKeyChar(keyChar);
       return this.suppressEvent;
-    } else if (this.isCountKey(keyChar)) {
+    } if (this.isCountKey(keyChar)) {
       const digit = parseInt(keyChar);
       this.reset(this.keyState.length === 1 ? (this.countPrefix * 10) + digit : digit);
       return this.suppressEvent;
-    } else {
-      if (keyChar) { this.reset(); }
-      return this.continueBubbling;
     }
+    if (keyChar) { this.reset(); }
+    return this.continueBubbling;
   }
 
   // This tests whether there is a mapping of keyChar in the current key state (and accounts for pass keys).
@@ -97,7 +112,7 @@ class KeyHandlerMode extends Mode {
 
   // This tests whether keyChar is a digit (and accounts for pass keys).
   isCountKey(keyChar) {
-    return keyChar && ((0 < this.countPrefix ? '0' : '1') <= keyChar && keyChar <= '9') && !this.isPassKey(keyChar);
+    return keyChar && ((this.countPrefix > 0 ? '0' : '1') <= keyChar && keyChar <= '9') && !this.isPassKey(keyChar);
   }
 
   // Keystrokes are *never* considered pass keys if the user has begun entering a command.  So, for example, if
@@ -107,7 +122,7 @@ class KeyHandlerMode extends Mode {
     const mappings = (Array.from(this.keyState).filter((mapping) => keyChar in mapping && (mapping !== this.keyMapping)));
     // If there are no continuation mappings, and there's no count prefix, and keyChar is a pass key, then
     // it's a pass key.
-    return (mappings.length === 0) && (this.countPrefix === 0) && Array.from(this.passKeys != null ? this.passKeys : "").includes(keyChar);
+    return (mappings.length === 0) && (this.countPrefix === 0) && Array.from(this.passKeys != null ? this.passKeys : '').includes(keyChar);
   }
 
   isInResetState() {
@@ -122,10 +137,10 @@ class KeyHandlerMode extends Mode {
     this.keyState = [...Array.from(((Array.from(this.keyState).filter((mapping) => keyChar in mapping).map((mapping) => mapping[keyChar])))), this.keyMapping];
     if (this.keyState[0].command != null) {
       const command = this.keyState[0];
-      const count = 0 < this.countPrefix ? this.countPrefix : 1;
+      const count = this.countPrefix > 0 ? this.countPrefix : 1;
       bgLog(`  invoke ${command.command} count=${count} `);
       this.reset();
-      this.commandHandler({command, count});
+      this.commandHandler({ command, count });
       if ((this.options.count != null) && (--this.options.count <= 0)) { this.exit(); }
     }
     return this.suppressEvent;

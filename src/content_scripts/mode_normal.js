@@ -1,3 +1,30 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    constructor-super,
+    func-names,
+    max-classes-per-file,
+    max-len,
+    no-alert,
+    no-constant-condition,
+    no-continue,
+    no-eval,
+    no-loop-func,
+    no-nested-ternary,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-globals,
+    no-restricted-syntax,
+    no-return-assign,
+    no-this-before-super,
+    no-undef,
+    no-underscore-dangle,
+    no-use-before-define,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS001: Remove Babel/TypeScript constructor workaround
@@ -13,81 +40,76 @@ class NormalMode extends KeyHandlerMode {
     {
       // Hack: trick Babel/TypeScript into allowing this before super.
       if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
+      const thisFn = (() => this).toString();
+      const thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
       eval(`${thisName} = this;`);
     }
     if (options == null) { options = {}; }
     const defaults = {
-      name: "normal",
+      name: 'normal',
       indicator: false, // There is normally no mode indicator in normal mode.
-      commandHandler: this.commandHandler.bind(this)
+      commandHandler: this.commandHandler.bind(this),
     };
 
     super(extend(defaults, options));
 
-    chrome.storage.local.get("normalModeKeyStateMapping", items => {
-      return this.setKeyMapping(items.normalModeKeyStateMapping);
-    });
+    chrome.storage.local.get('normalModeKeyStateMapping', (items) => this.setKeyMapping(items.normalModeKeyStateMapping));
 
     chrome.storage.onChanged.addListener((changes, area) => {
-      if ((area === "local") && (changes.normalModeKeyStateMapping != null ? changes.normalModeKeyStateMapping.newValue : undefined)) {
+      if ((area === 'local') && (changes.normalModeKeyStateMapping != null ? changes.normalModeKeyStateMapping.newValue : undefined)) {
         return this.setKeyMapping(changes.normalModeKeyStateMapping.newValue);
       }
     });
   }
 
-  commandHandler({command: registryEntry, count}) {
+  commandHandler({ command: registryEntry, count }) {
     count *= registryEntry.options.count != null ? registryEntry.options.count : 1;
     if (registryEntry.noRepeat) { count = 1; }
 
     if ((registryEntry.repeatLimit != null) && (registryEntry.repeatLimit < count)) {
       if (!confirm(`\
 You have asked Vimium to perform ${count} repetitions of the command: ${registryEntry.description}.\n
-Are you sure you want to continue?`
-      )) { return; }
+Are you sure you want to continue?`)) { return; }
     }
 
     if (registryEntry.topFrame) {
       // We never return to a UI-component frame (e.g. the help dialog), it might have lost the focus.
       const sourceFrameId = window.isVimiumUIComponent ? 0 : frameId;
-      return chrome.runtime.sendMessage({
-        handler: "sendMessageToFrames", message: {name: "runInTopFrame", sourceFrameId, registryEntry}});
-    } else if (registryEntry.background) {
-      return chrome.runtime.sendMessage({handler: "runBackgroundCommand", registryEntry, count});
-    } else {
-      return NormalModeCommands[registryEntry.command](count, {registryEntry});
+      return chrome.runtime.sendMessage({ handler: 'sendMessageToFrames', message: { name: 'runInTopFrame', sourceFrameId, registryEntry } });
+    } if (registryEntry.background) {
+      return chrome.runtime.sendMessage({ handler: 'runBackgroundCommand', registryEntry, count });
     }
+    return NormalModeCommands[registryEntry.command](count, { registryEntry });
   }
 }
 
-const enterNormalMode = count => new NormalMode({
-  indicator: "Normal mode (pass keys disabled)",
+const enterNormalMode = (count) => new NormalMode({
+  indicator: 'Normal mode (pass keys disabled)',
   exitOnEscape: true,
-  singleton: "enterNormalMode",
-  count
+  singleton: 'enterNormalMode',
+  count,
 });
 
 var NormalModeCommands = {
   // Scrolling.
   scrollToBottom() {
     Marks.setPreviousPosition();
-    return Scroller.scrollTo("y", "max");
+    return Scroller.scrollTo('y', 'max');
   },
   scrollToTop(count) {
     Marks.setPreviousPosition();
-    return Scroller.scrollTo("y", (count - 1) * Settings.get("scrollStepSize"));
+    return Scroller.scrollTo('y', (count - 1) * Settings.get('scrollStepSize'));
   },
-  scrollToLeft() { return Scroller.scrollTo("x", 0); },
-  scrollToRight() { return Scroller.scrollTo("x", "max"); },
-  scrollUp(count) { return Scroller.scrollBy("y", -1 * Settings.get("scrollStepSize") * count); },
-  scrollDown(count) { return Scroller.scrollBy("y", Settings.get("scrollStepSize") * count); },
-  scrollPageUp(count) { return Scroller.scrollBy("y", "viewSize", (-1/2) * count); },
-  scrollPageDown(count) { return Scroller.scrollBy("y", "viewSize", (1/2) * count); },
-  scrollFullPageUp(count) { return Scroller.scrollBy("y", "viewSize", -1 * count); },
-  scrollFullPageDown(count) { return Scroller.scrollBy("y", "viewSize", 1 * count); },
-  scrollLeft(count) { return Scroller.scrollBy("x", -1 * Settings.get("scrollStepSize") * count); },
-  scrollRight(count) { return Scroller.scrollBy("x", Settings.get("scrollStepSize") * count); },
+  scrollToLeft() { return Scroller.scrollTo('x', 0); },
+  scrollToRight() { return Scroller.scrollTo('x', 'max'); },
+  scrollUp(count) { return Scroller.scrollBy('y', -1 * Settings.get('scrollStepSize') * count); },
+  scrollDown(count) { return Scroller.scrollBy('y', Settings.get('scrollStepSize') * count); },
+  scrollPageUp(count) { return Scroller.scrollBy('y', 'viewSize', (-1 / 2) * count); },
+  scrollPageDown(count) { return Scroller.scrollBy('y', 'viewSize', (1 / 2) * count); },
+  scrollFullPageUp(count) { return Scroller.scrollBy('y', 'viewSize', -1 * count); },
+  scrollFullPageDown(count) { return Scroller.scrollBy('y', 'viewSize', 1 * count); },
+  scrollLeft(count) { return Scroller.scrollBy('x', -1 * Settings.get('scrollStepSize') * count); },
+  scrollRight(count) { return Scroller.scrollBy('x', Settings.get('scrollStepSize') * count); },
 
   // Tab navigation: back, forward.
   goBack(count) { return history.go(-count); },
@@ -96,11 +118,11 @@ var NormalModeCommands = {
   // Url manipulation.
   goUp(count) {
     let url = window.location.href;
-    if (url[url.length - 1] === "/") {
+    if (url[url.length - 1] === '/') {
       url = url.substring(0, url.length - 1);
     }
 
-    let urlsplit = url.split("/");
+    let urlsplit = url.split('/');
     // make sure we haven't hit the base domain yet
     if (urlsplit.length > 3) {
       urlsplit = urlsplit.slice(0, Math.max(3, urlsplit.length - count));
@@ -113,45 +135,45 @@ var NormalModeCommands = {
   },
 
   toggleViewSource() {
-    return chrome.runtime.sendMessage({ handler: "getCurrentTabUrl" }, function(url) {
-      if (url.substr(0, 12) === "view-source:") {
+    return chrome.runtime.sendMessage({ handler: 'getCurrentTabUrl' }, (url) => {
+      if (url.substr(0, 12) === 'view-source:') {
         url = url.substr(12, url.length - 12);
       } else {
-        url = "view-source:" + url;
+        url = `view-source:${url}`;
       }
-      return chrome.runtime.sendMessage({handler: "openUrlInNewTab", url});
-  });
+      return chrome.runtime.sendMessage({ handler: 'openUrlInNewTab', url });
+    });
   },
 
   copyCurrentUrl() {
-    return chrome.runtime.sendMessage({ handler: "getCurrentTabUrl" }, function(url) {
+    return chrome.runtime.sendMessage({ handler: 'getCurrentTabUrl' }, (url) => {
       HUD.copyToClipboard(url);
-      if (28 < url.length) { url = url.slice(0, 26) + "...."; }
+      if (url.length > 28) { url = `${url.slice(0, 26)}....`; }
       return HUD.showForDuration(`Yanked ${url}`, 2000);
     });
   },
 
   openCopiedUrlInNewTab(count) {
-    return HUD.pasteFromClipboard(url => chrome.runtime.sendMessage({ handler: "openUrlInNewTab", url, count }));
+    return HUD.pasteFromClipboard((url) => chrome.runtime.sendMessage({ handler: 'openUrlInNewTab', url, count }));
   },
 
   openCopiedUrlInCurrentTab() {
-    return HUD.pasteFromClipboard(url => chrome.runtime.sendMessage({ handler: "openUrlInCurrentTab", url }));
+    return HUD.pasteFromClipboard((url) => chrome.runtime.sendMessage({ handler: 'openUrlInCurrentTab', url }));
   },
 
   // Mode changes.
   enterInsertMode() {
     // If a focusable element receives the focus, then we exit and leave the permanently-installed insert-mode
     // instance to take over.
-    return new InsertMode({global: true, exitOnFocus: true});
+    return new InsertMode({ global: true, exitOnFocus: true });
   },
 
   enterVisualMode() {
-    return new VisualMode({userLaunchedMode: true});
+    return new VisualMode({ userLaunchedMode: true });
   },
 
   enterVisualLineMode() {
-    return new VisualLineMode({userLaunchedMode: true});
+    return new VisualLineMode({ userLaunchedMode: true });
   },
 
   enterFindMode() {
@@ -160,43 +182,46 @@ var NormalModeCommands = {
   },
 
   // Find.
-  performFind(count) { return (() => {
-    const result = [];
-    for (let i = 0, end = count; i < end; i++) {
-      result.push(FindMode.findNext(false));
-    }
-    return result;
-  })(); },
-  performBackwardsFind(count) { return (() => {
-    const result = [];
-    for (let i = 0, end = count; i < end; i++) {
-      result.push(FindMode.findNext(true));
-    }
-    return result;
-  })(); },
+  performFind(count) {
+    return (() => {
+      const result = [];
+      for (let i = 0, end = count; i < end; i++) {
+        result.push(FindMode.findNext(false));
+      }
+      return result;
+    })();
+  },
+  performBackwardsFind(count) {
+    return (() => {
+      const result = [];
+      for (let i = 0, end = count; i < end; i++) {
+        result.push(FindMode.findNext(true));
+      }
+      return result;
+    })();
+  },
 
   // Misc.
-  mainFrame() { return focusThisFrame({highlight: true, forceFocusThisFrame: true}); },
-  showHelp(sourceFrameId) { return HelpDialog.toggle({sourceFrameId, showAllCommandDetails: false}); },
+  mainFrame() { return focusThisFrame({ highlight: true, forceFocusThisFrame: true }); },
+  showHelp(sourceFrameId) { return HelpDialog.toggle({ sourceFrameId, showAllCommandDetails: false }); },
 
   passNextKey(count, options) {
     if (options.registryEntry.options.normal) {
       return enterNormalMode(count);
-    } else {
-      return new PassNextKeyMode(count);
     }
+    return new PassNextKeyMode(count);
   },
 
   goPrevious() {
-    const previousPatterns = Settings.get("previousPatterns") || "";
-    const previousStrings = previousPatterns.split(",").filter( s => s.trim().length);
-    return findAndFollowRel("prev") || findAndFollowLink(previousStrings);
+    const previousPatterns = Settings.get('previousPatterns') || '';
+    const previousStrings = previousPatterns.split(',').filter((s) => s.trim().length);
+    return findAndFollowRel('prev') || findAndFollowLink(previousStrings);
   },
 
   goNext() {
-    const nextPatterns = Settings.get("nextPatterns") || "";
-    const nextStrings = nextPatterns.split(",").filter( s => s.trim().length);
-    return findAndFollowRel("next") || findAndFollowLink(nextStrings);
+    const nextPatterns = Settings.get('nextPatterns') || '';
+    const nextStrings = nextPatterns.split(',').filter((s) => s.trim().length);
+    return findAndFollowRel('next') || findAndFollowLink(nextStrings);
   },
 
   focusInput(count) {
@@ -204,8 +229,7 @@ var NormalModeCommands = {
     // the currently-focused element highlighted specially. Tabbing will shift focus to the next input element.
     // Pressing any other key will remove the overlays and the special tab behavior.
     const resultSet = DomUtils.evaluateXPath(textInputXPath, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE);
-    const visibleInputs =
-      (() => {
+    const visibleInputs = (() => {
       const result = [];
       for (let i = 0, end = resultSet.snapshotLength; i < end; i++) {
         const element = resultSet.snapshotItem(i);
@@ -215,28 +239,25 @@ var NormalModeCommands = {
       return result;
     })();
 
-    visibleInputs.sort(function({element: element1, index: i1}, {element: element2, index: i2}) {
+    visibleInputs.sort(({ element: element1, index: i1 }, { element: element2, index: i2 }) => {
       // Put elements with a lower positive tabIndex first, keeping elements in DOM order.
       if (element1.tabIndex > 0) {
         if (element2.tabIndex > 0) {
           const tabDifference = element1.tabIndex - element2.tabIndex;
           if (tabDifference !== 0) {
             return tabDifference;
-          } else {
-            return i1 - i2;
           }
-        } else {
-          return -1;
+          return i1 - i2;
         }
-      } else if (element2.tabIndex > 0) {
+        return -1;
+      } if (element2.tabIndex > 0) {
         return 1;
-      } else {
-        return i1 - i2;
       }
+      return i1 - i2;
     });
 
     if (visibleInputs.length === 0) {
-      HUD.showForDuration("There are no inputs to focus.", 1000);
+      HUD.showForDuration('There are no inputs to focus.', 1000);
       return;
     }
 
@@ -244,28 +265,26 @@ var NormalModeCommands = {
     // to be the key-mappings input.  Arguably, this is the input that the user is most likely to use.
     const recentlyFocusedElement = lastFocusedInput();
 
-    const selectedInputIndex =
-      (() => {
+    const selectedInputIndex = (() => {
       if (count === 1) {
         // As the starting index, we pick that of the most recently focused input element (or 0).
-        const elements = visibleInputs.map(visibleInput => visibleInput.element);
+        const elements = visibleInputs.map((visibleInput) => visibleInput.element);
         return Math.max(0, elements.indexOf(recentlyFocusedElement));
-      } else {
-        return Math.min(count, visibleInputs.length) - 1;
       }
+      return Math.min(count, visibleInputs.length) - 1;
     })();
 
     const hints = (() => {
       const result1 = [];
-      for (let tuple of Array.from(visibleInputs)) {
-        const hint = DomUtils.createElement("div");
-        hint.className = "vimiumReset internalVimiumInputHint vimiumInputHint";
+      for (const tuple of Array.from(visibleInputs)) {
+        const hint = DomUtils.createElement('div');
+        hint.className = 'vimiumReset internalVimiumInputHint vimiumInputHint';
 
         // minus 1 for the border
-        hint.style.left = (tuple.rect.left - 1) + window.scrollX + "px";
-        hint.style.top = (tuple.rect.top - 1) + window.scrollY  + "px";
-        hint.style.width = tuple.rect.width + "px";
-        hint.style.height = tuple.rect.height + "px";
+        hint.style.left = `${(tuple.rect.left - 1) + window.scrollX}px`;
+        hint.style.top = `${(tuple.rect.top - 1) + window.scrollY}px`;
+        hint.style.width = `${tuple.rect.width}px`;
+        hint.style.height = `${tuple.rect.height}px`;
 
         result1.push(hint);
       }
@@ -273,41 +292,38 @@ var NormalModeCommands = {
     })();
 
     return new FocusSelector(hints, visibleInputs, selectedInputIndex);
-  }
+  },
 };
 
 if (typeof LinkHints !== 'undefined' && LinkHints !== null) {
   extend(NormalModeCommands, {
-    "LinkHints.activateMode": LinkHints.activateMode.bind(LinkHints),
-    "LinkHints.activateModeToOpenInNewTab": LinkHints.activateModeToOpenInNewTab.bind(LinkHints),
-    "LinkHints.activateModeToOpenInNewForegroundTab": LinkHints.activateModeToOpenInNewForegroundTab.bind(LinkHints),
-    "LinkHints.activateModeWithQueue": LinkHints.activateModeWithQueue.bind(LinkHints),
-    "LinkHints.activateModeToOpenIncognito": LinkHints.activateModeToOpenIncognito.bind(LinkHints),
-    "LinkHints.activateModeToDownloadLink": LinkHints.activateModeToDownloadLink.bind(LinkHints),
-    "LinkHints.activateModeToCopyLinkUrl": LinkHints.activateModeToCopyLinkUrl.bind(LinkHints)
-  }
-  );
+    'LinkHints.activateMode': LinkHints.activateMode.bind(LinkHints),
+    'LinkHints.activateModeToOpenInNewTab': LinkHints.activateModeToOpenInNewTab.bind(LinkHints),
+    'LinkHints.activateModeToOpenInNewForegroundTab': LinkHints.activateModeToOpenInNewForegroundTab.bind(LinkHints),
+    'LinkHints.activateModeWithQueue': LinkHints.activateModeWithQueue.bind(LinkHints),
+    'LinkHints.activateModeToOpenIncognito': LinkHints.activateModeToOpenIncognito.bind(LinkHints),
+    'LinkHints.activateModeToDownloadLink': LinkHints.activateModeToDownloadLink.bind(LinkHints),
+    'LinkHints.activateModeToCopyLinkUrl': LinkHints.activateModeToCopyLinkUrl.bind(LinkHints),
+  });
 }
 
 if (typeof Vomnibar !== 'undefined' && Vomnibar !== null) {
   extend(NormalModeCommands, {
-    "Vomnibar.activate": Vomnibar.activate.bind(Vomnibar),
-    "Vomnibar.activateInNewTab": Vomnibar.activateInNewTab.bind(Vomnibar),
-    "Vomnibar.activateTabSelection": Vomnibar.activateTabSelection.bind(Vomnibar),
-    "Vomnibar.activateBookmarks": Vomnibar.activateBookmarks.bind(Vomnibar),
-    "Vomnibar.activateBookmarksInNewTab": Vomnibar.activateBookmarksInNewTab.bind(Vomnibar),
-    "Vomnibar.activateEditUrl": Vomnibar.activateEditUrl.bind(Vomnibar),
-    "Vomnibar.activateEditUrlInNewTab": Vomnibar.activateEditUrlInNewTab.bind(Vomnibar)
-  }
-  );
+    'Vomnibar.activate': Vomnibar.activate.bind(Vomnibar),
+    'Vomnibar.activateInNewTab': Vomnibar.activateInNewTab.bind(Vomnibar),
+    'Vomnibar.activateTabSelection': Vomnibar.activateTabSelection.bind(Vomnibar),
+    'Vomnibar.activateBookmarks': Vomnibar.activateBookmarks.bind(Vomnibar),
+    'Vomnibar.activateBookmarksInNewTab': Vomnibar.activateBookmarksInNewTab.bind(Vomnibar),
+    'Vomnibar.activateEditUrl': Vomnibar.activateEditUrl.bind(Vomnibar),
+    'Vomnibar.activateEditUrlInNewTab': Vomnibar.activateEditUrlInNewTab.bind(Vomnibar),
+  });
 }
 
 if (typeof Marks !== 'undefined' && Marks !== null) {
   extend(NormalModeCommands, {
-    "Marks.activateCreateMode": Marks.activateCreateMode.bind(Marks),
-    "Marks.activateGotoMode": Marks.activateGotoMode.bind(Marks)
-  }
-  );
+    'Marks.activateCreateMode': Marks.activateCreateMode.bind(Marks),
+    'Marks.activateGotoMode': Marks.activateGotoMode.bind(Marks),
+  });
 }
 
 // The types in <input type="..."> that we consider for focusInput command. Right now this is recalculated in
@@ -316,25 +332,24 @@ if (typeof Marks !== 'undefined' && Marks !== null) {
 // Should we include the HTML5 date pickers here?
 
 // The corresponding XPath for such elements.
-var textInputXPath = (function() {
-  const textInputTypes = [ "text", "search", "email", "url", "number", "password", "date", "tel" ];
-  const inputElements = ["input[" +
-    "(" + textInputTypes.map(type => '@type="' + type + '"').join(" or ") + "or not(@type))" +
-    " and not(@disabled or @readonly)]",
-    "textarea", "*[@contenteditable='' or translate(@contenteditable, 'TRUE', 'true')='true']"];
+var textInputXPath = (function () {
+  const textInputTypes = ['text', 'search', 'email', 'url', 'number', 'password', 'date', 'tel'];
+  const inputElements = [`${'input['
+    + '('}${textInputTypes.map((type) => `@type="${type}"`).join(' or ')}or not(@type))`
+    + ' and not(@disabled or @readonly)]',
+  'textarea', "*[@contenteditable='' or translate(@contenteditable, 'TRUE', 'true')='true']"];
   return (typeof DomUtils !== 'undefined' && DomUtils !== null ? DomUtils.makeXPath(inputElements) : undefined);
-})();
+}());
 
 // used by the findAndFollow* functions.
-const followLink = function(linkElement) {
-  if (linkElement.nodeName.toLowerCase() === "link") {
+const followLink = function (linkElement) {
+  if (linkElement.nodeName.toLowerCase() === 'link') {
     return window.location.href = linkElement.href;
-  } else {
-    // if we can click on it, don't simply set location.href: some next/prev links are meant to trigger AJAX
-    // calls, like the 'more' button on GitHub's newsfeed.
-    linkElement.scrollIntoView();
-    return DomUtils.simulateClick(linkElement);
   }
+  // if we can click on it, don't simply set location.href: some next/prev links are meant to trigger AJAX
+  // calls, like the 'more' button on GitHub's newsfeed.
+  linkElement.scrollIntoView();
+  return DomUtils.simulateClick(linkElement);
 };
 
 //
@@ -343,9 +358,10 @@ const followLink = function(linkElement) {
 // and finally by whether the match is exact. Practically speaking, this means we favor 'next page' over 'the
 // next big thing', and 'more' over 'nextcompany', even if 'next' occurs before 'more' in :linkStrings.
 //
-var findAndFollowLink = function(linkStrings) {
-  let link, linkString;
-  const linksXPath = DomUtils.makeXPath(["a", "*[@onclick or @role='link' or contains(@class, 'button')]"]);
+var findAndFollowLink = function (linkStrings) {
+  let link; let
+    linkString;
+  const linksXPath = DomUtils.makeXPath(['a', "*[@onclick or @role='link' or contains(@class, 'button')]"]);
   const links = DomUtils.evaluateXPath(linksXPath, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE);
   let candidateLinks = [];
 
@@ -360,15 +376,15 @@ var findAndFollowLink = function(linkStrings) {
       continue;
     }
     const computedStyle = window.getComputedStyle(link, null);
-    if ((computedStyle.getPropertyValue("visibility") !== "visible") ||
-        (computedStyle.getPropertyValue("display") === "none")) {
+    if ((computedStyle.getPropertyValue('visibility') !== 'visible')
+        || (computedStyle.getPropertyValue('display') === 'none')) {
       continue;
     }
 
     let linkMatches = false;
     for (linkString of Array.from(linkStrings)) {
-      if ((link.innerText.toLowerCase().indexOf(linkString) !== -1) ||
-          (0 <= __guardMethod__(link.value, 'indexOf', o => o.indexOf(linkString)))) {
+      if ((link.innerText.toLowerCase().indexOf(linkString) !== -1)
+          || (__guardMethod__(link.value, 'indexOf', (o) => o.indexOf(linkString)) >= 0)) {
         linkMatches = true;
         break;
       }
@@ -390,22 +406,19 @@ var findAndFollowLink = function(linkStrings) {
   candidateLinks.forEach((a, i) => a.originalIndex = i);
 
   // favor shorter links, and ignore those that are more than one word longer than the shortest link
-  candidateLinks =
-    candidateLinks
-      .sort(function(a, b) {
-        if (a.wordCount === b.wordCount) { return a.originalIndex - b.originalIndex; } else { return a.wordCount - b.wordCount; }
-      })
-      .filter(a => a.wordCount <= (candidateLinks[0].wordCount + 1));
+  candidateLinks = candidateLinks
+    .sort((a, b) => {
+      if (a.wordCount === b.wordCount) { return a.originalIndex - b.originalIndex; } return a.wordCount - b.wordCount;
+    })
+    .filter((a) => a.wordCount <= (candidateLinks[0].wordCount + 1));
 
   for (linkString of Array.from(linkStrings)) {
-    const exactWordRegex =
-      /\b/.test(linkString[0]) || /\b/.test(linkString[linkString.length - 1]) ?
-        new RegExp("\\b" + linkString + "\\b", "i")
-      :
-        new RegExp(linkString, "i");
-    for (let candidateLink of Array.from(candidateLinks)) {
-      if (exactWordRegex.test(candidateLink.innerText) ||
-          (candidateLink.value && exactWordRegex.test(candidateLink.value))) {
+    const exactWordRegex = /\b/.test(linkString[0]) || /\b/.test(linkString[linkString.length - 1])
+      ? new RegExp(`\\b${linkString}\\b`, 'i')
+      : new RegExp(linkString, 'i');
+    for (const candidateLink of Array.from(candidateLinks)) {
+      if (exactWordRegex.test(candidateLink.innerText)
+          || (candidateLink.value && exactWordRegex.test(candidateLink.value))) {
         followLink(candidateLink);
         return true;
       }
@@ -414,12 +427,12 @@ var findAndFollowLink = function(linkStrings) {
   return false;
 };
 
-var findAndFollowRel = function(value) {
-  const relTags = ["link", "a", "area"];
-  for (let tag of Array.from(relTags)) {
+var findAndFollowRel = function (value) {
+  const relTags = ['link', 'a', 'area'];
+  for (const tag of Array.from(relTags)) {
     const elements = document.getElementsByTagName(tag);
-    for (let element of Array.from(elements)) {
-      if (element.hasAttribute("rel") && (element.rel.toLowerCase() === value)) {
+    for (const element of Array.from(elements)) {
+      if (element.hasAttribute('rel') && (element.rel.toLowerCase() === value)) {
         followLink(element);
         return true;
       }
@@ -430,37 +443,35 @@ var findAndFollowRel = function(value) {
 class FocusSelector extends Mode {
   constructor(hints, visibleInputs, selectedInputIndex) {
     super({
-      name: "focus-selector",
+      name: 'focus-selector',
       exitOnClick: true,
-      keydown: event => {
-        if (event.key === "Tab") {
+      keydown: (event) => {
+        if (event.key === 'Tab') {
           hints[selectedInputIndex].classList.remove('internalVimiumSelectedInputHint');
           selectedInputIndex += hints.length + (event.shiftKey ? -1 : 1);
           selectedInputIndex %= hints.length;
           hints[selectedInputIndex].classList.add('internalVimiumSelectedInputHint');
           DomUtils.simulateSelect(visibleInputs[selectedInputIndex].element);
           return this.suppressEvent;
-        } else if (event.key !== "Shift") {
+        } if (event.key !== 'Shift') {
           this.exit();
           // Give the new mode the opportunity to handle the event.
           return this.restartBubbling;
         }
-      }
+      },
     });
 
     this.hintContainingDiv = DomUtils.addElementList(hints, {
-      id: "vimiumInputMarkerContainer",
-      className: "vimiumReset"
-    }
-    );
+      id: 'vimiumInputMarkerContainer',
+      className: 'vimiumReset',
+    });
 
     DomUtils.simulateSelect(visibleInputs[selectedInputIndex].element);
     if (visibleInputs.length === 1) {
       this.exit();
       return;
-    } else {
-      hints[selectedInputIndex].classList.add('internalVimiumSelectedInputHint');
     }
+    hints[selectedInputIndex].classList.add('internalVimiumSelectedInputHint');
   }
 
   exit() {
@@ -468,9 +479,9 @@ class FocusSelector extends Mode {
     DomUtils.removeElement(this.hintContainingDiv);
     if (document.activeElement && DomUtils.isEditable(document.activeElement)) {
       return new InsertMode({
-        singleton: "post-find-mode/focus-input",
+        singleton: 'post-find-mode/focus-input',
         targetElement: document.activeElement,
-        indicator: false
+        indicator: false,
       });
     }
   }
@@ -484,7 +495,6 @@ if (typeof exports === 'undefined' || exports === null) { extend(window, root); 
 function __guardMethod__(obj, methodName, transform) {
   if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
     return transform(obj, methodName);
-  } else {
-    return undefined;
   }
+  return undefined;
 }

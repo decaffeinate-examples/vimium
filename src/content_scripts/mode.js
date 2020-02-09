@@ -1,3 +1,28 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    constructor-super,
+    func-names,
+    max-classes-per-file,
+    max-len,
+    no-console,
+    no-constant-condition,
+    no-eval,
+    no-loop-func,
+    no-multi-assign,
+    no-nested-ternary,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-return-assign,
+    no-this-before-super,
+    no-undef,
+    no-underscore-dangle,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS001: Remove Babel/TypeScript constructor workaround
@@ -39,14 +64,14 @@ class Mode {
     // If Mode.debug is true, then we generate a trace of modes being activated and deactivated on the console.
     this.debug = false;
     this.modes = [];
-  
+
     // Constants; short, readable names for the return values expected by handlerStack.bubbleEvent.
     this.prototype.continueBubbling = handlerStack.continueBubbling;
     this.prototype.suppressEvent = handlerStack.suppressEvent;
     this.prototype.passEventToPage = handlerStack.passEventToPage;
     this.prototype.suppressPropagation = handlerStack.suppressPropagation;
     this.prototype.restartBubbling = handlerStack.restartBubbling;
-  
+
     this.prototype.alwaysContinueBubbling = handlerStack.alwaysContinueBubbling;
     this.prototype.alwaysSuppressPropagation = handlerStack.alwaysSuppressPropagation;
   }
@@ -58,20 +83,18 @@ class Mode {
     this.exitHandlers = [];
     this.modeIsActive = true;
     this.modeIsExiting = false;
-    this.name = this.options.name || "anonymous";
+    this.name = this.options.name || 'anonymous';
 
     this.count = ++count;
     this.id = `${this.name}-${this.count}`;
-    this.log("activate:", this.id);
+    this.log('activate:', this.id);
 
     // If options.suppressAllKeyboardEvents is truthy, then all keyboard events are suppressed.  This avoids
     // the need for modes which suppress all keyboard events 1) to provide handlers for all of those events,
     // or 2) to worry about event suppression and event-handler return values.
     if (this.options.suppressAllKeyboardEvents) {
-      for (var type of [ "keydown", "keypress" ]) {
-        ((handler) => {
-          return this.options[type] = event => this.alwaysSuppressPropagation(() => (typeof handler === 'function' ? handler(event) : undefined));
-        })(this.options[type]);
+      for (var type of ['keydown', 'keypress']) {
+        ((handler) => this.options[type] = (event) => this.alwaysSuppressPropagation(() => (typeof handler === 'function' ? handler(event) : undefined)))(this.options[type]);
       }
     }
 
@@ -87,8 +110,8 @@ class Mode {
         if (this.options.indicator != null) {
           if (this.options.indicator) { HUD.show(this.options.indicator); } else { HUD.hide(true, false); }
           return this.passEventToPage;
-        } else { return this.continueBubbling; }
-      }
+        } return this.continueBubbling;
+      },
     });
 
     // If @options.exitOnEscape is truthy, then the mode will exit when the escape key is pressed.
@@ -97,11 +120,11 @@ class Mode {
       // priority.
       this.push({
         _name: `mode-${this.id}/exitOnEscape`,
-        "keydown": event => {
+        keydown: (event) => {
           if (!KeyboardUtils.isEscape(event)) { return this.continueBubbling; }
           this.exit(event, event.target);
           return this.suppressEvent;
-        }
+        },
       });
     }
 
@@ -110,7 +133,7 @@ class Mode {
     if (this.options.exitOnBlur) {
       this.push({
         _name: `mode-${this.id}/exitOnBlur`,
-        "blur": event => this.alwaysContinueBubbling(() => { if (event.target === this.options.exitOnBlur) { return this.exit(event); } })
+        blur: (event) => this.alwaysContinueBubbling(() => { if (event.target === this.options.exitOnBlur) { return this.exit(event); } }),
       });
     }
 
@@ -118,17 +141,17 @@ class Mode {
     if (this.options.exitOnClick) {
       this.push({
         _name: `mode-${this.id}/exitOnClick`,
-        "click": event => this.alwaysContinueBubbling(() => this.exit(event))
+        click: (event) => this.alwaysContinueBubbling(() => this.exit(event)),
       });
     }
 
-    //If @options.exitOnFocus is truthy, then the mode will exit whenever a focusable element is activated.
+    // If @options.exitOnFocus is truthy, then the mode will exit whenever a focusable element is activated.
     if (this.options.exitOnFocus) {
       this.push({
         _name: `mode-${this.id}/exitOnFocus`,
-        "focus": event => this.alwaysContinueBubbling(() => {
+        focus: (event) => this.alwaysContinueBubbling(() => {
           if (DomUtils.isFocusable(event.target)) { return this.exit(event); }
-        })
+        }),
       });
     }
 
@@ -136,7 +159,7 @@ class Mode {
     if (this.options.exitOnScroll) {
       this.push({
         _name: `mode-${this.id}/exitOnScroll`,
-        "scroll": event => this.alwaysContinueBubbling(() => this.exit(event))
+        scroll: (event) => this.alwaysContinueBubbling(() => this.exit(event)),
       });
     }
 
@@ -158,20 +181,19 @@ class Mode {
     // keys which we have handled, but which otherwise might trigger page actions (if the page is listening for
     // keyup events).
     if (this.options.suppressTrailingKeyEvents) {
-      this.onExit(function() {
-        const handler = function(event) {
+      this.onExit(() => {
+        const handler = function (event) {
           if (event.repeat) {
             return handlerStack.suppressEvent;
-          } else {
-            this.remove();
-            return handlerStack.continueBubbling;
           }
+          this.remove();
+          return handlerStack.continueBubbling;
         };
 
         return handlerStack.push({
-          name: "suppress-trailing-key-events",
+          name: 'suppress-trailing-key-events',
           keydown: handler,
-          keypress: handler
+          keypress: handler,
         });
       });
     }
@@ -180,18 +202,20 @@ class Mode {
     this.setIndicator();
     this.logModes();
   }
-    // End of Mode constructor.
+  // End of Mode constructor.
 
   setIndicator(indicator) {
-    if (indicator == null) { ({
-      indicator
-    } = this.options); }
+    if (indicator == null) {
+      ({
+        indicator,
+      } = this.options);
+    }
     this.options.indicator = indicator;
     return Mode.setIndicator();
   }
 
   static setIndicator() {
-    return handlerStack.bubbleEvent("indicator");
+    return handlerStack.bubbleEvent('indicator');
   }
 
   push(handlers) {
@@ -210,12 +234,12 @@ class Mode {
 
   exit(...args) {
     if (this.modeIsExiting || !this.modeIsActive) { return; }
-    this.log("deactivate:", this.id);
+    this.log('deactivate:', this.id);
     this.modeIsExiting = true;
 
-    for (let handler of Array.from(this.exitHandlers)) { handler(...Array.from(args || [])); }
-    for (let handlerId of Array.from(this.handlers)) { handlerStack.remove(handlerId); }
-    Mode.modes = Mode.modes.filter(mode => mode !== this);
+    for (const handler of Array.from(this.exitHandlers)) { handler(...Array.from(args || [])); }
+    for (const handlerId of Array.from(this.handlers)) { handlerStack.remove(handlerId); }
+    Mode.modes = Mode.modes.filter((mode) => mode !== this);
 
     this.modeIsActive = false;
     return this.setIndicator();
@@ -224,8 +248,8 @@ class Mode {
   // Debugging routines.
   logModes() {
     if (Mode.debug) {
-      this.log("active modes (top to bottom):");
-      return Array.from(Mode.modes.slice().reverse()).map((mode) => this.log(" ", mode.id));
+      this.log('active modes (top to bottom):');
+      return Array.from(Mode.modes.slice().reverse()).map((mode) => this.log(' ', mode.id));
     }
   }
 
@@ -235,12 +259,12 @@ class Mode {
 
   // For tests only.
   static top() {
-    return this.modes[this.modes.length-1];
+    return this.modes[this.modes.length - 1];
   }
 
   // For tests only.
   static reset() {
-    for (let mode of Array.from(this.modes)) { mode.exit(); }
+    for (const mode of Array.from(this.modes)) { mode.exit(); }
     return this.modes = [];
   }
 }
@@ -250,8 +274,8 @@ class SuppressAllKeyboardEvents extends Mode {
   constructor(options) {
     if (options == null) { options = {}; }
     const defaults = {
-      name: "suppressAllKeyboardEvents",
-      suppressAllKeyboardEvents: true
+      name: 'suppressAllKeyboardEvents',
+      suppressAllKeyboardEvents: true,
     };
     super(extend(defaults, options));
   }
@@ -263,24 +287,24 @@ class CacheAllKeydownEvents extends SuppressAllKeyboardEvents {
     {
       // Hack: trick Babel/TypeScript into allowing this before super.
       if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
+      const thisFn = (() => this).toString();
+      const thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
       eval(`${thisName} = this;`);
     }
     if (options == null) { options = {}; }
     this.keydownEvents = (keydownEvents = []);
     const defaults = {
-      name: "cacheAllKeydownEvents",
-      keydown(event) { return keydownEvents.push(event); }
+      name: 'cacheAllKeydownEvents',
+      keydown(event) { return keydownEvents.push(event); },
     };
     super(extend(defaults, options));
   }
 
   replayKeydownEvents() {
-    return Array.from(this.keydownEvents).map((event) => handlerStack.bubbleEvent("keydown", event));
+    return Array.from(this.keydownEvents).map((event) => handlerStack.bubbleEvent('keydown', event));
   }
 }
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));
-extend(root, {Mode, SuppressAllKeyboardEvents, CacheAllKeydownEvents});
+extend(root, { Mode, SuppressAllKeyboardEvents, CacheAllKeydownEvents });
 if (typeof exports === 'undefined' || exports === null) { extend(window, root); }

@@ -1,3 +1,23 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    default-case,
+    max-classes-per-file,
+    max-len,
+    no-console,
+    no-multi-assign,
+    no-nested-ternary,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-return-assign,
+    no-undef,
+    no-underscore-dangle,
+    no-use-before-define,
+    prefer-destructuring,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -22,14 +42,14 @@ const Vomnibar = {
 
   activate(userOptions) {
     const options = {
-      completer: "omni",
-      query: "",
+      completer: 'omni',
+      query: '',
       newTab: false,
       selectFirst: false,
-      keyword: null
+      keyword: null,
     };
     extend(options, userOptions);
-    extend(options, {refreshInterval: options.completer === "omni" ? 150 : 0});
+    extend(options, { refreshInterval: options.completer === 'omni' ? 150 : 0 });
 
     const completer = this.getCompleter(options.completer);
     if (this.vomnibarUI == null) { this.vomnibarUI = new VomnibarUI(); }
@@ -44,7 +64,7 @@ const Vomnibar = {
   },
 
   hide() { return (this.vomnibarUI != null ? this.vomnibarUI.hide() : undefined); },
-  onHidden() { return (this.vomnibarUI != null ? this.vomnibarUI.onHidden() : undefined); }
+  onHidden() { return (this.vomnibarUI != null ? this.vomnibarUI.onHidden() : undefined); },
 };
 
 class VomnibarUI {
@@ -58,17 +78,23 @@ class VomnibarUI {
   }
 
   setQuery(query) { return this.input.value = query; }
+
   setKeyword(keyword) { return this.customSearchMode = keyword; }
+
   setInitialSelectionValue(initialSelectionValue) {
     this.initialSelectionValue = initialSelectionValue;
   }
+
   setRefreshInterval(refreshInterval) {
     this.refreshInterval = refreshInterval;
   }
+
   setForceNewTab(forceNewTab) {
     this.forceNewTab = forceNewTab;
   }
+
   setCompleter(completer) { this.completer = completer; return this.reset(); }
+
   setKeywords(keywords) {
     this.keywords = keywords;
   }
@@ -83,7 +109,7 @@ class VomnibarUI {
   hide(onHiddenCallback = null) {
     this.onHiddenCallback = onHiddenCallback;
     this.input.blur();
-    UIComponentServer.postMessage("hide");
+    UIComponentServer.postMessage('hide');
     return this.reset();
   }
 
@@ -97,8 +123,8 @@ class VomnibarUI {
 
   reset() {
     this.clearUpdateTimer();
-    this.completionList.style.display = "";
-    this.input.value = "";
+    this.completionList.style.display = '';
+    this.input.value = '';
     this.completions = [];
     this.previousInputValue = null;
     this.customSearchMode = null;
@@ -114,13 +140,13 @@ class VomnibarUI {
     if (this.lastReponse.isCustomSearch && (this.customSearchMode == null)) {
       const queryTerms = this.input.value.trim().split(/\s+/);
       this.customSearchMode = queryTerms[0];
-      this.input.value = queryTerms.slice(1).join(" ");
+      this.input.value = queryTerms.slice(1).join(' ');
     }
 
     // For suggestions for custom search engines, we copy the suggested text into the input when the item is
     // selected, and revert when it is not.  This allows the user to select a suggestion and then continue
     // typing.
-    if ((0 <= this.selection) && (this.completions[this.selection].insertText != null)) {
+    if ((this.selection >= 0) && (this.completions[this.selection].insertText != null)) {
       if (this.previousInputValue == null) { this.previousInputValue = this.input.value; }
       this.input.value = this.completions[this.selection].insertText;
     } else if (this.previousInputValue != null) {
@@ -129,8 +155,7 @@ class VomnibarUI {
     }
 
     // Highlight the selected entry, and only the selected entry.
-    return __range__(0, this.completionList.children.length, false).map((i) =>
-      (this.completionList.children[i].className = (i === this.selection ? "vomnibarSelected" : "")));
+    return __range__(0, this.completionList.children.length, false).map((i) => (this.completionList.children[i].className = (i === this.selection ? 'vomnibarSelected' : '')));
   }
 
   // Returns the user's action ("up", "down", "tab", etc, or null) based on their keypress.  We support the
@@ -139,62 +164,63 @@ class VomnibarUI {
     const key = KeyboardUtils.getKeyChar(event);
     // Handle <Enter> on "keypress", and other events on "keydown"; this avoids interence with CJK translation
     // (see #2915 and #2934).
-    if ((event.type === "keypress") && (key !== "enter")) { return null; }
-    if ((event.type === "keydown") && (key === "enter")) { return null; }
+    if ((event.type === 'keypress') && (key !== 'enter')) { return null; }
+    if ((event.type === 'keydown') && (key === 'enter')) { return null; }
     if (KeyboardUtils.isEscape(event)) {
-      return "dismiss";
-    } else if ((key === "up") ||
-        (event.shiftKey && (event.key === "Tab")) ||
-        (event.ctrlKey && ((key === "k") || (key === "p")))) {
-      return "up";
-    } else if ((event.key === "Tab") && !event.shiftKey) {
-      return "tab";
-    } else if ((key === "down") ||
-        (event.ctrlKey && ((key === "j") || (key === "n")))) {
-      return "down";
-    } else if (event.ctrlKey && (event.key === "Enter")) {
-      return "ctrl-enter";
-    } else if (event.key === "Enter") {
-      return "enter";
-    } else if ((event.key === "Delete") && event.shiftKey && !event.ctrlKey && !event.altKey) {
-      return "remove";
-    } else if (KeyboardUtils.isBackspace(event)) {
-      return "delete";
+      return 'dismiss';
+    } if ((key === 'up')
+        || (event.shiftKey && (event.key === 'Tab'))
+        || (event.ctrlKey && ((key === 'k') || (key === 'p')))) {
+      return 'up';
+    } if ((event.key === 'Tab') && !event.shiftKey) {
+      return 'tab';
+    } if ((key === 'down')
+        || (event.ctrlKey && ((key === 'j') || (key === 'n')))) {
+      return 'down';
+    } if (event.ctrlKey && (event.key === 'Enter')) {
+      return 'ctrl-enter';
+    } if (event.key === 'Enter') {
+      return 'enter';
+    } if ((event.key === 'Delete') && event.shiftKey && !event.ctrlKey && !event.altKey) {
+      return 'remove';
+    } if (KeyboardUtils.isBackspace(event)) {
+      return 'delete';
     }
 
     return null;
   }
 
   onKeyEvent(event) {
-    let action, completion;
+    let action; let
+      completion;
     this.lastAction = (action = this.actionFromKeyEvent(event));
     if (!action) { return true; } // pass through
 
     const openInNewTab = this.forceNewTab || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey;
-    if (action === "dismiss") {
+    if (action === 'dismiss') {
       this.hide();
-    } else if ([ "tab", "down" ].includes(action)) {
-      if ((action === "tab") &&
-        (this.completer.name === "omni") &&
-        !this.seenTabToOpenCompletionList &&
-        (this.input.value.trim().length === 0)) {
-          this.seenTabToOpenCompletionList = true;
-          this.update(true);
-      } else if (0 < this.completions.length) {
+    } else if (['tab', 'down'].includes(action)) {
+      if ((action === 'tab')
+        && (this.completer.name === 'omni')
+        && !this.seenTabToOpenCompletionList
+        && (this.input.value.trim().length === 0)) {
+        this.seenTabToOpenCompletionList = true;
+        this.update(true);
+      } else if (this.completions.length > 0) {
         this.selection += 1;
         if (this.selection === this.completions.length) { this.selection = this.initialSelectionValue; }
         this.updateSelection();
       }
-    } else if (action === "up") {
+    } else if (action === 'up') {
       this.selection -= 1;
       if (this.selection < this.initialSelectionValue) { this.selection = this.completions.length - 1; }
       this.updateSelection();
-    } else if (action === "enter") {
+    } else if (action === 'enter') {
       const isCustomSearchPrimarySuggestion = (this.completions[this.selection] != null ? this.completions[this.selection].isPrimarySuggestion : undefined) && ((this.lastReponse.engine != null ? this.lastReponse.engine.searchUrl : undefined) != null);
       if ((this.selection === -1) || isCustomSearchPrimarySuggestion) {
         let query = this.input.value.trim();
         // <Enter> on an empty query is a no-op.
-        if (!(0 < query.length)) { return; }
+        if (!(query.length > 0)) { return; }
         // First case (@selection == -1).
         // If the user types something and hits enter without selecting a completion from the list, then:
         //   - If a search URL has been provided, then use it.  This is custom search engine request.
@@ -212,14 +238,14 @@ class VomnibarUI {
         completion = this.completions[this.selection];
         this.hide(() => completion.performAction(openInNewTab));
       }
-    } else if (action === "ctrl-enter") {
+    } else if (action === 'ctrl-enter') {
       // Populate the vomnibar with the current selection's URL.
       if ((this.customSearchMode == null) && (this.selection >= 0)) {
-          if (this.previousInputValue == null) { this.previousInputValue = this.input.value; }
-          this.input.value = this.completions[this.selection] != null ? this.completions[this.selection].url : undefined;
-          this.input.scrollLeft = this.input.scrollWidth;
-        }
-    } else if (action === "delete") {
+        if (this.previousInputValue == null) { this.previousInputValue = this.input.value; }
+        this.input.value = this.completions[this.selection] != null ? this.completions[this.selection].url : undefined;
+        this.input.scrollLeft = this.input.scrollWidth;
+      }
+    } else if (action === 'delete') {
       if ((this.customSearchMode != null) && (this.input.selectionEnd === 0)) {
         // Normally, with custom search engines, the keyword (e,g, the "w" of "w query terms") is suppressed.
         // If the cursor is at the start of the input, then reinstate the keyword (the "w").
@@ -233,7 +259,7 @@ class VomnibarUI {
       } else {
         return true; // Do not suppress event.
       }
-    } else if ((action === "remove") && (0 <= this.selection)) {
+    } else if ((action === 'remove') && (this.selection >= 0)) {
       completion = this.completions[this.selection];
       console.log(completion);
     }
@@ -247,25 +273,25 @@ class VomnibarUI {
   // Return the background-page query corresponding to the current input state.  In other words, reinstate any
   // search engine keyword which is currently being suppressed, and strip any prompted text.
   getInputValueAsQuery() {
-    return ((this.customSearchMode != null) ? this.customSearchMode + " " : "") + this.input.value;
+    return ((this.customSearchMode != null) ? `${this.customSearchMode} ` : '') + this.input.value;
   }
 
   updateCompletions(callback = null) {
     return this.completer.filter({
       query: this.getInputValueAsQuery(),
       seenTabToOpenCompletionList: this.seenTabToOpenCompletionList,
-      callback: lastReponse => {
+      callback: (lastReponse) => {
         this.lastReponse = lastReponse;
         const { results } = this.lastReponse;
         this.completions = results;
         this.selection = (this.completions[0] != null ? this.completions[0].autoSelect : undefined) ? 0 : this.initialSelectionValue;
         // Update completion list with the new suggestions.
-        this.completionList.innerHTML = this.completions.map(completion => `<li>${completion.html}</li>`).join("");
-        this.completionList.style.display = this.completions.length > 0 ? "block" : "";
+        this.completionList.innerHTML = this.completions.map((completion) => `<li>${completion.html}</li>`).join('');
+        this.completionList.style.display = this.completions.length > 0 ? 'block' : '';
         this.selection = Math.min(this.completions.length - 1, Math.max(this.initialSelectionValue, this.selection));
         this.updateSelection();
         return (typeof callback === 'function' ? callback() : undefined);
-      }
+      },
     });
   }
 
@@ -273,7 +299,7 @@ class VomnibarUI {
     let updateSynchronously;
     this.seenTabToOpenCompletionList = false;
     this.completer.cancel();
-    if ((0 <= this.selection) && this.completions[this.selection].customSearchMode && !this.customSearchMode) {
+    if ((this.selection >= 0) && this.completions[this.selection].customSearchMode && !this.customSearchMode) {
       this.customSearchMode = this.completions[this.selection].customSearchMode;
       updateSynchronously = true;
     }
@@ -294,7 +320,7 @@ class VomnibarUI {
 
   shouldActivateCustomSearchMode() {
     const queryTerms = this.input.value.ltrim().split(/\s+/);
-    return (1 < queryTerms.length) && Array.from(this.keywords).includes(queryTerms[0]) && !this.customSearchMode;
+    return (queryTerms.length > 1) && Array.from(this.keywords).includes(queryTerms[0]) && !this.customSearchMode;
   }
 
   update(updateSynchronously, callback = null) {
@@ -318,23 +344,23 @@ class VomnibarUI {
   }
 
   initDom() {
-    this.box = document.getElementById("vomnibar");
+    this.box = document.getElementById('vomnibar');
 
-    this.input = this.box.querySelector("input");
-    this.input.addEventListener("input", this.onInput);
-    this.input.addEventListener("keydown", this.onKeyEvent);
-    this.input.addEventListener("keypress", this.onKeyEvent);
-    this.completionList = this.box.querySelector("ul");
-    this.completionList.style.display = "";
+    this.input = this.box.querySelector('input');
+    this.input.addEventListener('input', this.onInput);
+    this.input.addEventListener('keydown', this.onKeyEvent);
+    this.input.addEventListener('keypress', this.onKeyEvent);
+    this.completionList = this.box.querySelector('ul');
+    this.completionList.style.display = '';
 
-    window.addEventListener("focus", () => this.input.focus());
+    window.addEventListener('focus', () => this.input.focus());
     // A click in the vomnibar itself refocuses the input.
-    this.box.addEventListener("click", event => {
+    this.box.addEventListener('click', (event) => {
       this.input.focus();
       return event.stopImmediatePropagation();
     });
     // A click anywhere else hides the vomnibar.
-    return document.addEventListener("click", () => this.hide());
+    return document.addEventListener('click', () => this.hide());
   }
 }
 
@@ -343,40 +369,38 @@ class VomnibarUI {
 //
 class BackgroundCompleter {
   static initClass() {
-  
     // These are the actions we can perform when the user selects a result.
     this.prototype.completionActions = {
-      navigateToUrl(url) { return openInNewTab => Vomnibar.getCompleter().launchUrl(url, openInNewTab); },
-  
-      switchToTab(tabId) { return () => chrome.runtime.sendMessage({handler: "selectSpecificTab", id: tabId}); }
+      navigateToUrl(url) { return (openInNewTab) => Vomnibar.getCompleter().launchUrl(url, openInNewTab); },
+
+      switchToTab(tabId) { return () => chrome.runtime.sendMessage({ handler: 'selectSpecificTab', id: tabId }); },
     };
   }
+
   // The "name" is the background-page completer to connect to: "omni", "tabs", or "bookmarks".
   constructor(name) {
     this.name = name;
-    this.port = chrome.runtime.connect({name: "completions"});
+    this.port = chrome.runtime.connect({ name: 'completions' });
     this.messageId = null;
     this.reset();
 
-    this.port.onMessage.addListener(msg => {
+    this.port.onMessage.addListener((msg) => {
       switch (msg.handler) {
-        case "keywords":
+        case 'keywords':
           this.keywords = msg.keywords;
           return this.lastUI.setKeywords(this.keywords);
-        case "completions":
+        case 'completions':
           if (msg.id === this.messageId) {
             // The result objects coming from the background page will be of the form:
             //   { html: "", type: "", url: "", ... }
             // Type will be one of [tab, bookmark, history, domain, search], or a custom search engine description.
-            for (let result of Array.from(msg.results)) {
+            for (const result of Array.from(msg.results)) {
               extend(result, {
                 performAction:
-                  result.type === "tab" ?
-                    this.completionActions.switchToTab(result.tabId)
-                  :
-                    this.completionActions.navigateToUrl(result.url)
-              }
-              );
+                  result.type === 'tab'
+                    ? this.completionActions.switchToTab(result.tabId)
+                    : this.completionActions.navigateToUrl(result.url),
+              });
             }
 
             // Handle the message, but only if it hasn't arrived too late.
@@ -392,15 +416,13 @@ class BackgroundCompleter {
     this.mostRecentCallback = callback;
 
     return this.port.postMessage(extend(request, {
-      handler: "filter",
+      handler: 'filter',
       name: this.name,
       id: (this.messageId = Utils.createUniqueId()),
-      queryTerms: query.trim().split(/\s+/).filter(s => 0 < s.length),
+      queryTerms: query.trim().split(/\s+/).filter((s) => s.length > 0),
       // We don't send these keys.
-      callback: null
-    }
-    )
-    );
+      callback: null,
+    }));
   }
 
   reset() {
@@ -410,13 +432,13 @@ class BackgroundCompleter {
   refresh(lastUI) {
     this.lastUI = lastUI;
     this.reset();
-    return this.port.postMessage({name: this.name, handler: "refresh"});
+    return this.port.postMessage({ name: this.name, handler: 'refresh' });
   }
 
   cancel() {
     // Inform the background completer that it may (should it choose to do so) abandon any pending query
     // (because the user is typing, and there will be another query along soon).
-    return this.port.postMessage({name: this.name, handler: "cancel"});
+    return this.port.postMessage({ name: this.name, handler: 'cancel' });
   }
 
   launchUrl(url, openInNewTab) {
@@ -424,30 +446,30 @@ class BackgroundCompleter {
     // tab.
     if (openInNewTab) { openInNewTab = !Utils.hasJavascriptPrefix(url); }
     return chrome.runtime.sendMessage({
-      handler: openInNewTab ? "openUrlInNewTab" : "openUrlInCurrentTab",
-      url
+      handler: openInNewTab ? 'openUrlInNewTab' : 'openUrlInCurrentTab',
+      url,
     });
   }
 }
 BackgroundCompleter.initClass();
 
-UIComponentServer.registerHandler(function(event) {
+UIComponentServer.registerHandler((event) => {
   switch (event.data.name != null ? event.data.name : event.data) {
-    case "hide": return Vomnibar.hide();
-    case "hidden": return Vomnibar.onHidden();
-    case "activate": return Vomnibar.activate(event.data);
+    case 'hide': return Vomnibar.hide();
+    case 'hidden': return Vomnibar.onHidden();
+    case 'activate': return Vomnibar.activate(event.data);
   }
 });
 
-document.addEventListener("DOMContentLoaded", () => DomUtils.injectUserCss()); // Manually inject custom user styles.
+document.addEventListener('DOMContentLoaded', () => DomUtils.injectUserCss()); // Manually inject custom user styles.
 
 const root = typeof exports !== 'undefined' && exports !== null ? exports : window;
 root.Vomnibar = Vomnibar;
 
 function __range__(left, right, inclusive) {
-  let range = [];
-  let ascending = left < right;
-  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  const range = [];
+  const ascending = left < right;
+  const end = !inclusive ? right : ascending ? right + 1 : right - 1;
   for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
     range.push(i);
   }
