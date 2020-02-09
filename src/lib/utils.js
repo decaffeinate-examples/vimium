@@ -1,338 +1,442 @@
-# Only pass events to the handler if they are marked as trusted by the browser.
-# This is kept in the global namespace for brevity and ease of use.
-window.forTrusted ?= (handler) -> (event) ->
-  if event?.isTrusted
-    handler.apply this, arguments
-  else
-    true
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS104: Avoid inline assignments
+ * DS202: Simplify dynamic range loops
+ * DS203: Remove `|| {}` from converted for-own loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+// Only pass events to the handler if they are marked as trusted by the browser.
+// This is kept in the global namespace for brevity and ease of use.
+if (window.forTrusted == null) { window.forTrusted = handler => (function(event) {
+  if ((event != null ? event.isTrusted : undefined)) {
+    return handler.apply(this, arguments);
+  } else {
+    return true;
+  }
+}); }
 
-browserInfo = browser?.runtime?.getBrowserInfo?()
+const browserInfo = __guardMethod__(typeof browser !== 'undefined' && browser !== null ? browser.runtime : undefined, 'getBrowserInfo', o => o.getBrowserInfo());
 
-Utils =
-  isFirefox: do ->
-    # NOTE(mrmr1993): This test only works in the background page, this is overwritten by isEnabledForUrl for
-    # content scripts, and the "settings" message from UIComponent is for pages like HUD.
-    isFirefox = false
-    browserInfo?.then? (browserInfo) ->
-      isFirefox = browserInfo?.name == "Firefox"
-    -> isFirefox
-  firefoxVersion: do ->
-    # NOTE(mrmr1993): This only works in the background page.
-    ffVersion = undefined
-    browserInfo?.then? (browserInfo) ->
-      ffVersion = browserInfo?.version
-    -> ffVersion
-  getCurrentVersion: ->
-    chrome.runtime.getManifest().version
+var Utils = {
+  isFirefox: (function() {
+    // NOTE(mrmr1993): This test only works in the background page, this is overwritten by isEnabledForUrl for
+    // content scripts, and the "settings" message from UIComponent is for pages like HUD.
+    let isFirefox = false;
+    __guardMethod__(browserInfo, 'then', o1 => o1.then(browserInfo => isFirefox = (browserInfo != null ? browserInfo.name : undefined) === "Firefox"));
+    return () => isFirefox;
+  })(),
+  firefoxVersion: (function() {
+    // NOTE(mrmr1993): This only works in the background page.
+    let ffVersion = undefined;
+    __guardMethod__(browserInfo, 'then', o1 => o1.then(browserInfo => ffVersion = browserInfo != null ? browserInfo.version : undefined));
+    return () => ffVersion;
+  })(),
+  getCurrentVersion() {
+    return chrome.runtime.getManifest().version;
+  },
 
-  # Returns true whenever the current page (or the page supplied as an argument) is from the extension's
-  # origin (and thus can access the extension's localStorage).
-  isExtensionPage: (win = window) -> try win.document.location?.origin + "/" == chrome.extension.getURL ""
+  // Returns true whenever the current page (or the page supplied as an argument) is from the extension's
+  // origin (and thus can access the extension's localStorage).
+  isExtensionPage(win) { if (win == null) { win = window; } try { return ((win.document.location != null ? win.document.location.origin : undefined) + "/") === chrome.extension.getURL(""); } catch (error) {} },
 
-  # Returns true whenever the current page is the extension's background page.
-  isBackgroundPage: -> @isExtensionPage() and chrome.extension.getBackgroundPage?() == window
+  // Returns true whenever the current page is the extension's background page.
+  isBackgroundPage() { return this.isExtensionPage() && ((typeof chrome.extension.getBackgroundPage === 'function' ? chrome.extension.getBackgroundPage() : undefined) === window); },
 
-  # Escape all special characters, so RegExp will parse the string 'as is'.
-  # Taken from http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-  escapeRegexSpecialCharacters: do ->
-    escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g
-    (str) -> str.replace escapeRegex, "\\$&"
+  // Escape all special characters, so RegExp will parse the string 'as is'.
+  // Taken from http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+  escapeRegexSpecialCharacters: (function() {
+    const escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+    return str => str.replace(escapeRegex, "\\$&");
+  })(),
 
-  escapeHtml: (string) -> string.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  escapeHtml(string) { return string.replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
 
-  # Generates a unique ID
-  createUniqueId: do ->
-    id = 0
-    -> id += 1
+  // Generates a unique ID
+  createUniqueId: (function() {
+    let id = 0;
+    return () => id += 1;
+  })(),
 
-  hasChromePrefix: do ->
-    chromePrefixes = [ "about:", "view-source:", "extension:", "chrome-extension:", "data:" ]
-    (url) ->
-      for prefix in chromePrefixes
-        return true if url.startsWith prefix
-      false
+  hasChromePrefix: (function() {
+    const chromePrefixes = [ "about:", "view-source:", "extension:", "chrome-extension:", "data:" ];
+    return function(url) {
+      for (let prefix of Array.from(chromePrefixes)) {
+        if (url.startsWith(prefix)) { return true; }
+      }
+      return false;
+    };
+  })(),
 
-  hasJavascriptPrefix: (url) ->
-    url.startsWith "javascript:"
+  hasJavascriptPrefix(url) {
+    return url.startsWith("javascript:");
+  },
 
-  hasFullUrlPrefix: do ->
-    urlPrefix = new RegExp "^[a-z][-+.a-z0-9]{2,}://."
-    (url) -> urlPrefix.test url
+  hasFullUrlPrefix: (function() {
+    const urlPrefix = new RegExp("^[a-z][-+.a-z0-9]{2,}://.");
+    return url => urlPrefix.test(url);
+  })(),
 
-  # Decode valid escape sequences in a URI.  This is intended to mimic the best-effort decoding
-  # Chrome itself seems to apply when a Javascript URI is enetered into the omnibox (or clicked).
-  # See https://code.google.com/p/chromium/issues/detail?id=483000, #1611 and #1636.
-  decodeURIByParts: (uri) ->
-    uri.split(/(?=%)/).map((uriComponent) ->
-      try
-        decodeURIComponent uriComponent
-      catch
-        uriComponent
-    ).join ""
+  // Decode valid escape sequences in a URI.  This is intended to mimic the best-effort decoding
+  // Chrome itself seems to apply when a Javascript URI is enetered into the omnibox (or clicked).
+  // See https://code.google.com/p/chromium/issues/detail?id=483000, #1611 and #1636.
+  decodeURIByParts(uri) {
+    return uri.split(/(?=%)/).map(function(uriComponent) {
+      try {
+        return decodeURIComponent(uriComponent);
+      } catch (error) {
+        return uriComponent;
+      }
+    }).join("");
+  },
 
-  # Completes a partial URL (without scheme)
-  createFullUrl: (partialUrl) ->
-    if @hasFullUrlPrefix(partialUrl) then partialUrl else ("http://" + partialUrl)
+  // Completes a partial URL (without scheme)
+  createFullUrl(partialUrl) {
+    if (this.hasFullUrlPrefix(partialUrl)) { return partialUrl; } else { return ("http://" + partialUrl); }
+  },
 
-  # Tries to detect if :str is a valid URL.
-  isUrl: (str) ->
-    # Must not contain spaces
-    return false if ' ' in str
+  // Tries to detect if :str is a valid URL.
+  isUrl(str) {
+    // Must not contain spaces
+    if (Array.from(str).includes(' ')) { return false; }
 
-    # Starts with a scheme: URL
-    return true if @hasFullUrlPrefix str
+    // Starts with a scheme: URL
+    if (this.hasFullUrlPrefix(str)) { return true; }
 
-    # More or less RFC compliant URL host part parsing. This should be sufficient for our needs
-    urlRegex = new RegExp(
-      '^(?:([^:]+)(?::([^:]+))?@)?' + # user:password (optional) => \1, \2
-      '([^:]+|\\[[^\\]]+\\])'       + # host name (IPv6 addresses in square brackets allowed) => \3
-      '(?::(\\d+))?$'                 # port number (optional) => \4
-      )
+    // More or less RFC compliant URL host part parsing. This should be sufficient for our needs
+    const urlRegex = new RegExp(
+      '^(?:([^:]+)(?::([^:]+))?@)?' + // user:password (optional) => \1, \2
+      '([^:]+|\\[[^\\]]+\\])'       + // host name (IPv6 addresses in square brackets allowed) => \3
+      '(?::(\\d+))?$'                 // port number (optional) => \4
+      );
 
-    # Official ASCII TLDs that are longer than 3 characters + inofficial .onion TLD used by TOR
-    longTlds = ['arpa', 'asia', 'coop', 'info', 'jobs', 'local', 'mobi', 'museum', 'name', 'onion']
+    // Official ASCII TLDs that are longer than 3 characters + inofficial .onion TLD used by TOR
+    const longTlds = ['arpa', 'asia', 'coop', 'info', 'jobs', 'local', 'mobi', 'museum', 'name', 'onion'];
 
-    specialHostNames = ['localhost']
+    const specialHostNames = ['localhost'];
 
-    # Try to parse the URL into its meaningful parts. If matching fails we're pretty sure that we don't have
-    # some kind of URL here.
-    match = urlRegex.exec (str.split '/')[0]
-    return false unless match
-    hostName = match[3]
+    // Try to parse the URL into its meaningful parts. If matching fails we're pretty sure that we don't have
+    // some kind of URL here.
+    const match = urlRegex.exec((str.split('/'))[0]);
+    if (!match) { return false; }
+    const hostName = match[3];
 
-    # Allow known special host names
-    return true if hostName in specialHostNames
+    // Allow known special host names
+    if (Array.from(specialHostNames).includes(hostName)) { return true; }
 
-    # Allow IPv6 addresses (need to be wrapped in brackets as required by RFC). It is sufficient to check for
-    # a colon, as the regex wouldn't match colons in the host name unless it's an v6 address
-    return true if ':' in hostName
+    // Allow IPv6 addresses (need to be wrapped in brackets as required by RFC). It is sufficient to check for
+    // a colon, as the regex wouldn't match colons in the host name unless it's an v6 address
+    if (Array.from(hostName).includes(':')) { return true; }
 
-    # At this point we have to make a decision. As a heuristic, we check if the input has dots in it. If yes,
-    # and if the last part could be a TLD, treat it as an URL
-    dottedParts = hostName.split '.'
+    // At this point we have to make a decision. As a heuristic, we check if the input has dots in it. If yes,
+    // and if the last part could be a TLD, treat it as an URL
+    const dottedParts = hostName.split('.');
 
-    if dottedParts.length > 1
-      lastPart = dottedParts.pop()
-      return true if 2 <= lastPart.length <= 3 or lastPart in longTlds
+    if (dottedParts.length > 1) {
+      const lastPart = dottedParts.pop();
+      if ((2 <= lastPart.length && lastPart.length <= 3) || Array.from(longTlds).includes(lastPart)) { return true; }
+    }
 
-    # Allow IPv4 addresses
-    return true if /^(\d{1,3}\.){3}\d{1,3}$/.test hostName
+    // Allow IPv4 addresses
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostName)) { return true; }
 
-    # Fallback: no URL
-    return false
+    // Fallback: no URL
+    return false;
+  },
 
-  # Map a search query to its URL encoded form. The query may be either a string or an array of strings.
-  # E.g. "BBC Sport" -> "BBC+Sport".
-  createSearchQuery: (query) ->
-    query = query.split(/\s+/) if typeof(query) == "string"
-    query.map(encodeURIComponent).join "+"
+  // Map a search query to its URL encoded form. The query may be either a string or an array of strings.
+  // E.g. "BBC Sport" -> "BBC+Sport".
+  createSearchQuery(query) {
+    if (typeof(query) === "string") { query = query.split(/\s+/); }
+    return query.map(encodeURIComponent).join("+");
+  },
 
-  # Create a search URL from the given :query (using either the provided search URL, or the default one).
-  # It would be better to pull the default search engine from chrome itself.  However, chrome does not provide
-  # an API for doing so.
-  createSearchUrl: (query, searchUrl = Settings.get("searchUrl")) ->
-    searchUrl += "%s" unless ['%s', '%S'].some (token) -> searchUrl.indexOf(token) >= 0
-    searchUrl = searchUrl.replace /%S/g, query
-    searchUrl.replace /%s/g, @createSearchQuery query
+  // Create a search URL from the given :query (using either the provided search URL, or the default one).
+  // It would be better to pull the default search engine from chrome itself.  However, chrome does not provide
+  // an API for doing so.
+  createSearchUrl(query, searchUrl) {
+    if (searchUrl == null) { searchUrl = Settings.get("searchUrl"); }
+    if (!['%s', '%S'].some(token => searchUrl.indexOf(token) >= 0)) { searchUrl += "%s"; }
+    searchUrl = searchUrl.replace(/%S/g, query);
+    return searchUrl.replace(/%s/g, this.createSearchQuery(query));
+  },
 
-  # Extract a query from url if it appears to be a URL created from the given search URL.
-  # For example, map "https://www.google.ie/search?q=star+wars&foo&bar" to "star wars".
-  extractQuery: do =>
-    queryTerminator = new RegExp "[?&#/]"
-    httpProtocolRegexp = new RegExp "^https?://"
-    (searchUrl, url) ->
-      url = url.replace httpProtocolRegexp
-      searchUrl = searchUrl.replace httpProtocolRegexp
-      [ searchUrl, suffixTerms... ] = searchUrl.split "%s"
-      # We require the URL to start with the search URL.
-      return null unless url.startsWith searchUrl
-      # We require any remaining terms in the search URL to also be present in the URL.
-      for suffix in suffixTerms
-        return null unless 0 <= url.indexOf suffix
-      # We use try/catch because decodeURIComponent can throw an exception.
-      try
-          url[searchUrl.length..].split(queryTerminator)[0].split("+").map(decodeURIComponent).join " "
-      catch
-        null
+  // Extract a query from url if it appears to be a URL created from the given search URL.
+  // For example, map "https://www.google.ie/search?q=star+wars&foo&bar" to "star wars".
+  extractQuery: (() => {
+    const queryTerminator = new RegExp("[?&#/]");
+    const httpProtocolRegexp = new RegExp("^https?://");
+    return function(searchUrl, url) {
+      let suffixTerms;
+      url = url.replace(httpProtocolRegexp);
+      searchUrl = searchUrl.replace(httpProtocolRegexp);
+      [ searchUrl, ...suffixTerms ] = Array.from(searchUrl.split("%s"));
+      // We require the URL to start with the search URL.
+      if (!url.startsWith(searchUrl)) { return null; }
+      // We require any remaining terms in the search URL to also be present in the URL.
+      for (let suffix of Array.from(suffixTerms)) {
+        if (!(0 <= url.indexOf(suffix))) { return null; }
+      }
+      // We use try/catch because decodeURIComponent can throw an exception.
+      try {
+          return url.slice(searchUrl.length).split(queryTerminator)[0].split("+").map(decodeURIComponent).join(" ");
+      } catch (error) {
+        return null;
+      }
+    };
+  })(),
 
-  # Converts :string into a Google search if it's not already a URL. We don't bother with escaping characters
-  # as Chrome will do that for us.
-  convertToUrl: (string) ->
-    string = string.trim()
+  // Converts :string into a Google search if it's not already a URL. We don't bother with escaping characters
+  // as Chrome will do that for us.
+  convertToUrl(string) {
+    string = string.trim();
 
-    # Special-case about:[url], view-source:[url] and the like
-    if Utils.hasChromePrefix string
-      string
-    else if Utils.hasJavascriptPrefix string
-      # In Chrome versions older than 46.0.2467.2, encoded javascript URIs weren't handled correctly.
-      if Utils.haveChromeVersion "46.0.2467.2" then string else Utils.decodeURIByParts string
-    else if Utils.isUrl string
-      Utils.createFullUrl string
-    else
-      Utils.createSearchUrl string
+    // Special-case about:[url], view-source:[url] and the like
+    if (Utils.hasChromePrefix(string)) {
+      return string;
+    } else if (Utils.hasJavascriptPrefix(string)) {
+      // In Chrome versions older than 46.0.2467.2, encoded javascript URIs weren't handled correctly.
+      if (Utils.haveChromeVersion("46.0.2467.2")) { return string; } else { return Utils.decodeURIByParts(string); }
+    } else if (Utils.isUrl(string)) {
+      return Utils.createFullUrl(string);
+    } else {
+      return Utils.createSearchUrl(string);
+    }
+  },
 
-  # detects both literals and dynamically created strings
-  isString: (obj) -> typeof obj == 'string' or obj instanceof String
+  // detects both literals and dynamically created strings
+  isString(obj) { return (typeof obj === 'string') || obj instanceof String; },
 
-  # Transform "zjkjkabz" into "abjkz".
-  distinctCharacters: (str) ->
-    chars = str.split("").sort()
-    (ch for ch, index in chars when index == 0 or ch != chars[index-1]).join ""
+  // Transform "zjkjkabz" into "abjkz".
+  distinctCharacters(str) {
+    const chars = str.split("").sort();
+    return ((() => {
+      const result = [];
+      for (let index = 0; index < chars.length; index++) {
+        const ch = chars[index];
+        if ((index === 0) || (ch !== chars[index-1])) {
+          result.push(ch);
+        }
+      }
+      return result;
+    })()).join("");
+  },
 
-  # Compares two version strings (e.g. "1.1" and "1.5") and returns
-  # -1 if versionA is < versionB, 0 if they're equal, and 1 if versionA is > versionB.
-  compareVersions: (versionA, versionB) ->
-    versionA = versionA.split(".")
-    versionB = versionB.split(".")
-    for i in [0...(Math.max(versionA.length, versionB.length))]
-      a = parseInt(versionA[i] || 0, 10)
-      b = parseInt(versionB[i] || 0, 10)
-      if (a < b)
-        return -1
-      else if (a > b)
-        return 1
-    0
+  // Compares two version strings (e.g. "1.1" and "1.5") and returns
+  // -1 if versionA is < versionB, 0 if they're equal, and 1 if versionA is > versionB.
+  compareVersions(versionA, versionB) {
+    versionA = versionA.split(".");
+    versionB = versionB.split(".");
+    for (let i = 0, end = Math.max(versionA.length, versionB.length), asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+      const a = parseInt(versionA[i] || 0, 10);
+      const b = parseInt(versionB[i] || 0, 10);
+      if (a < b) {
+        return -1;
+      } else if (a > b) {
+        return 1;
+      }
+    }
+    return 0;
+  },
 
-  # True if the current Chrome version is at least the required version.
-  haveChromeVersion: (required) ->
-    chromeVersion = navigator.appVersion.match(/Chrom(e|ium)\/(.*?) /)?[2]
-    chromeVersion and 0 <= Utils.compareVersions chromeVersion, required
+  // True if the current Chrome version is at least the required version.
+  haveChromeVersion(required) {
+    const chromeVersion = __guard__(navigator.appVersion.match(/Chrom(e|ium)\/(.*?) /), x => x[2]);
+    return chromeVersion && (0 <= Utils.compareVersions(chromeVersion, required));
+  },
 
-  # Zip two (or more) arrays:
-  #   - Utils.zip([ [a,b], [1,2] ]) returns [ [a,1], [b,2] ]
-  #   - Length of result is `arrays[0].length`.
-  #   - Adapted from: http://stackoverflow.com/questions/4856717/javascript-equivalent-of-pythons-zip-function
-  zip: (arrays) ->
-    arrays[0].map (_,i) ->
-      arrays.map( (array) -> array[i] )
+  // Zip two (or more) arrays:
+  //   - Utils.zip([ [a,b], [1,2] ]) returns [ [a,1], [b,2] ]
+  //   - Length of result is `arrays[0].length`.
+  //   - Adapted from: http://stackoverflow.com/questions/4856717/javascript-equivalent-of-pythons-zip-function
+  zip(arrays) {
+    return arrays[0].map((_, i) => arrays.map( array => array[i]));
+  },
 
-  # locale-sensitive uppercase detection
-  hasUpperCase: (s) -> s.toLowerCase() != s
+  // locale-sensitive uppercase detection
+  hasUpperCase(s) { return s.toLowerCase() !== s; },
 
-  # Does string match any of these regexps?
-  matchesAnyRegexp: (regexps, string) ->
-    for re in regexps
-      return true if re.test string
-    false
+  // Does string match any of these regexps?
+  matchesAnyRegexp(regexps, string) {
+    for (let re of Array.from(regexps)) {
+      if (re.test(string)) { return true; }
+    }
+    return false;
+  },
 
-  # Convenience wrapper for setTimeout (with the arguments around the other way).
-  setTimeout: (ms, func) -> setTimeout func, ms
+  // Convenience wrapper for setTimeout (with the arguments around the other way).
+  setTimeout(ms, func) { return setTimeout(func, ms); },
 
-  # Like Nodejs's nextTick.
-  nextTick: (func) -> @setTimeout 0, func
+  // Like Nodejs's nextTick.
+  nextTick(func) { return this.setTimeout(0, func); },
 
-  # Make an idempotent function.
-  makeIdempotent: (func) ->
-    (args...) -> ([previousFunc, func] = [func, null])[0]? args...
+  // Make an idempotent function.
+  makeIdempotent(func) {
+    return function(...args) { let previousFunc, ref;
+    return __guardMethod__(([previousFunc, func] = Array.from(ref = [func, null]), ref), 0, (o1, m) => o1[m](...Array.from(args || []))); };
+  },
 
-  monitorChromeStorage: (key, setter) ->
-    # NOTE: "?" here for the tests.
-    chrome?.storage.local.get key, (obj) =>
-      setter obj[key] if obj[key]?
-      chrome.storage.onChanged.addListener (changes, area) =>
-        setter changes[key].newValue if changes[key]?.newValue?
+  monitorChromeStorage(key, setter) {
+    // NOTE: "?" here for the tests.
+    return (typeof chrome !== 'undefined' && chrome !== null ? chrome.storage.local.get(key, obj => {
+      if (obj[key] != null) { setter(obj[key]); }
+      return chrome.storage.onChanged.addListener((changes, area) => {
+        if ((changes[key] != null ? changes[key].newValue : undefined) != null) { return setter(changes[key].newValue); }
+      });
+    }) : undefined);
+  }
+};
 
-# This creates a new function out of an existing function, where the new function takes fewer arguments. This
-# allows us to pass around functions instead of functions + a partial list of arguments.
-Function::curry = ->
-  fixedArguments = Array.copy(arguments)
-  fn = this
-  -> fn.apply(this, fixedArguments.concat(Array.copy(arguments)))
+// This creates a new function out of an existing function, where the new function takes fewer arguments. This
+// allows us to pass around functions instead of functions + a partial list of arguments.
+Function.prototype.curry = function() {
+  const fixedArguments = Array.copy(arguments);
+  const fn = this;
+  return function() { return fn.apply(this, fixedArguments.concat(Array.copy(arguments))); };
+};
 
-Array.copy = (array) -> Array.prototype.slice.call(array, 0)
+Array.copy = array => Array.prototype.slice.call(array, 0);
 
-String::startsWith = (str) -> @indexOf(str) == 0
-String::ltrim = -> @replace /^\s+/, ""
-String::rtrim = -> @replace /\s+$/, ""
-String::reverse = -> @split("").reverse().join ""
+String.prototype.startsWith = function(str) { return this.indexOf(str) === 0; };
+String.prototype.ltrim = function() { return this.replace(/^\s+/, ""); };
+String.prototype.rtrim = function() { return this.replace(/\s+$/, ""); };
+String.prototype.reverse = function() { return this.split("").reverse().join(""); };
 
-globalRoot = window ? global
-globalRoot.extend = (hash1, hash2) ->
-  for own key of hash2
-    hash1[key] = hash2[key]
-  hash1
+const globalRoot = typeof window !== 'undefined' && window !== null ? window : global;
+globalRoot.extend = function(hash1, hash2) {
+  for (let key of Object.keys(hash2 || {})) {
+    hash1[key] = hash2[key];
+  }
+  return hash1;
+};
 
-# A simple cache. Entries used within two expiry periods are retained, otherwise they are discarded.
-# At most 2 * @entries entries are retained.
-class SimpleCache
-  # expiry: expiry time in milliseconds (default, one hour)
-  # entries: maximum number of entries in @cache (there may be up to this many entries in @previous, too)
-  constructor: (@expiry = 60 * 60 * 1000, @entries = 1000) ->
-    @cache = {}
-    @previous = {}
-    @lastRotation = new Date()
+// A simple cache. Entries used within two expiry periods are retained, otherwise they are discarded.
+// At most 2 * @entries entries are retained.
+class SimpleCache {
+  // expiry: expiry time in milliseconds (default, one hour)
+  // entries: maximum number of entries in @cache (there may be up to this many entries in @previous, too)
+  constructor(expiry, entries) {
+    if (expiry == null) { expiry = 60 * 60 * 1000; }
+    this.expiry = expiry;
+    if (entries == null) { entries = 1000; }
+    this.entries = entries;
+    this.cache = {};
+    this.previous = {};
+    this.lastRotation = new Date();
+  }
 
-  has: (key) ->
-    @rotate()
-    (key of @cache) or key of @previous
+  has(key) {
+    this.rotate();
+    return (key in this.cache) || key in this.previous;
+  }
 
-  # Set value, and return that value.  If value is null, then delete key.
-  set: (key, value = null) ->
-    @rotate()
-    delete @previous[key]
-    if value?
-      @cache[key] = value
-    else
-      delete @cache[key]
-      null
+  // Set value, and return that value.  If value is null, then delete key.
+  set(key, value = null) {
+    this.rotate();
+    delete this.previous[key];
+    if (value != null) {
+      return this.cache[key] = value;
+    } else {
+      delete this.cache[key];
+      return null;
+    }
+  }
 
-  get: (key) ->
-    @rotate()
-    if key of @cache
-      @cache[key]
-    else if key of @previous
-      @cache[key] = @previous[key]
-      delete @previous[key]
-      @cache[key]
-    else
-      null
+  get(key) {
+    this.rotate();
+    if (key in this.cache) {
+      return this.cache[key];
+    } else if (key in this.previous) {
+      this.cache[key] = this.previous[key];
+      delete this.previous[key];
+      return this.cache[key];
+    } else {
+      return null;
+    }
+  }
 
-  rotate: (force = false) ->
-    Utils.nextTick =>
-      if force or @entries < Object.keys(@cache).length or @expiry < new Date() - @lastRotation
-        @lastRotation = new Date()
-        @previous = @cache
-        @cache = {}
+  rotate(force) {
+    if (force == null) { force = false; }
+    return Utils.nextTick(() => {
+      if (force || (this.entries < Object.keys(this.cache).length) || (this.expiry < (new Date() - this.lastRotation))) {
+        this.lastRotation = new Date();
+        this.previous = this.cache;
+        return this.cache = {};
+      }
+  });
+  }
 
-  clear: ->
-    @rotate true
-    @rotate true
+  clear() {
+    this.rotate(true);
+    return this.rotate(true);
+  }
+}
 
-# This is a simple class for the common case where we want to use some data value which may be immediately
-# available, or for which we may have to wait.  It implements a use-immediately-or-wait queue, and calls the
-# fetch function to fetch the data asynchronously.
-class AsyncDataFetcher
-  constructor: (fetch) ->
-    @data = null
-    @queue = []
-    Utils.nextTick =>
-      fetch (@data) =>
-        callback @data for callback in @queue
-        @queue = null
+// This is a simple class for the common case where we want to use some data value which may be immediately
+// available, or for which we may have to wait.  It implements a use-immediately-or-wait queue, and calls the
+// fetch function to fetch the data asynchronously.
+class AsyncDataFetcher {
+  constructor(fetch) {
+    this.data = null;
+    this.queue = [];
+    Utils.nextTick(() => {
+      return fetch(data => {
+        this.data = data;
+        for (let callback of Array.from(this.queue)) { callback(this.data); }
+        return this.queue = null;
+      });
+    });
+  }
 
-  use: (callback) ->
-    if @data? then callback @data else @queue.push callback
+  use(callback) {
+    if (this.data != null) { return callback(this.data); } else { return this.queue.push(callback); }
+  }
+}
 
-# This takes a list of jobs (functions) and runs them, asynchronously.  Functions queued with @onReady() are
-# run once all of the jobs have completed.
-class JobRunner
-  constructor: (@jobs) ->
-    @fetcher = new AsyncDataFetcher (callback) =>
-      for job in @jobs
-        do (job) =>
-          Utils.nextTick =>
-            job =>
-              @jobs = @jobs.filter (j) -> j != job
-              callback true if @jobs.length == 0
+// This takes a list of jobs (functions) and runs them, asynchronously.  Functions queued with @onReady() are
+// run once all of the jobs have completed.
+class JobRunner {
+  constructor(jobs) {
+    this.jobs = jobs;
+    this.fetcher = new AsyncDataFetcher(callback => {
+      return Array.from(this.jobs).map((job) =>
+        (job => {
+          return Utils.nextTick(() => {
+            return job(() => {
+              this.jobs = this.jobs.filter(j => j !== job);
+              if (this.jobs.length === 0) { return callback(true); }
+            });
+          });
+        })(job));
+    });
+  }
 
-  onReady: (callback) ->
-    @fetcher.use callback
+  onReady(callback) {
+    return this.fetcher.use(callback);
+  }
+}
 
-root = exports ? (window.root ?= {})
-root.Utils = Utils
-root.SimpleCache = SimpleCache
-root.AsyncDataFetcher = AsyncDataFetcher
-root.JobRunner = JobRunner
-unless exports?
-  root.extend = extend
-  extend window, root
+const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));
+root.Utils = Utils;
+root.SimpleCache = SimpleCache;
+root.AsyncDataFetcher = AsyncDataFetcher;
+root.JobRunner = JobRunner;
+if (typeof exports === 'undefined' || exports === null) {
+  root.extend = extend;
+  extend(window, root);
+}
+
+function __guardMethod__(obj, methodName, transform) {
+  if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
+    return transform(obj, methodName);
+  } else {
+    return undefined;
+  }
+}
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

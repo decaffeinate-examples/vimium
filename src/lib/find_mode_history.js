@@ -1,51 +1,74 @@
-# NOTE(mrmr1993): This is under lib/ since it is used by both content scripts and iframes from pages/.
-# This implements find-mode query history (using the "findModeRawQueryList" setting) as a list of raw queries,
-# most recent first.
-FindModeHistory =
-  storage: chrome?.storage.local # Guard against chrome being undefined (in the HUD iframe).
-  key: "findModeRawQueryList"
-  max: 50
-  rawQueryList: null
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+// NOTE(mrmr1993): This is under lib/ since it is used by both content scripts and iframes from pages/.
+// This implements find-mode query history (using the "findModeRawQueryList" setting) as a list of raw queries,
+// most recent first.
+const FindModeHistory = {
+  storage: (typeof chrome !== 'undefined' && chrome !== null ? chrome.storage.local : undefined), // Guard against chrome being undefined (in the HUD iframe).
+  key: "findModeRawQueryList",
+  max: 50,
+  rawQueryList: null,
 
-  init: ->
-    @isIncognitoMode = chrome?.extension.inIncognitoContext
+  init() {
+    this.isIncognitoMode = typeof chrome !== 'undefined' && chrome !== null ? chrome.extension.inIncognitoContext : undefined;
 
-    return unless @isIncognitoMode? # chrome is undefined in the HUD iframe during tests, so we do nothing.
+    if (this.isIncognitoMode == null) { return; } // chrome is undefined in the HUD iframe during tests, so we do nothing.
 
-    unless @rawQueryList
-      @rawQueryList = [] # Prevent repeated initialization.
-      @key = "findModeRawQueryListIncognito" if @isIncognitoMode
-      @storage.get @key, (items) =>
-        unless chrome.runtime.lastError
-          @rawQueryList = items[@key] if items[@key]
-          if @isIncognitoMode and not items[@key]
-            # This is the first incognito tab, so we need to initialize the incognito-mode query history.
-            @storage.get "findModeRawQueryList", (items) =>
-              unless chrome.runtime.lastError
-                @rawQueryList = items.findModeRawQueryList
-                @storage.set findModeRawQueryListIncognito: @rawQueryList
+    if (!this.rawQueryList) {
+      this.rawQueryList = []; // Prevent repeated initialization.
+      if (this.isIncognitoMode) { this.key = "findModeRawQueryListIncognito"; }
+      this.storage.get(this.key, items => {
+        if (!chrome.runtime.lastError) {
+          if (items[this.key]) { this.rawQueryList = items[this.key]; }
+          if (this.isIncognitoMode && !items[this.key]) {
+            // This is the first incognito tab, so we need to initialize the incognito-mode query history.
+            return this.storage.get("findModeRawQueryList", items => {
+              if (!chrome.runtime.lastError) {
+                this.rawQueryList = items.findModeRawQueryList;
+                return this.storage.set({findModeRawQueryListIncognito: this.rawQueryList});
+              }
+            });
+          }
+        }
+      });
+    }
 
-    chrome.storage.onChanged.addListener (changes, area) =>
-      @rawQueryList = changes[@key].newValue if changes[@key]
+    return chrome.storage.onChanged.addListener((changes, area) => {
+      if (changes[this.key]) { return this.rawQueryList = changes[this.key].newValue; }
+  });
+  },
 
-  getQuery: (index = 0) ->
-    @rawQueryList[index] or ""
+  getQuery(index) {
+    if (index == null) { index = 0; }
+    return this.rawQueryList[index] || "";
+  },
 
-  saveQuery: (query) ->
-    if 0 < query.length
-      @rawQueryList = @refreshRawQueryList query, @rawQueryList
-      newSetting = {}; newSetting[@key] = @rawQueryList
-      @storage.set newSetting
-      # If there are any active incognito-mode tabs, then propagte this query to those tabs too.
-      unless @isIncognitoMode
-        @storage.get "findModeRawQueryListIncognito", (items) =>
-          if not chrome.runtime.lastError and items.findModeRawQueryListIncognito
-            @storage.set
-              findModeRawQueryListIncognito: @refreshRawQueryList query, items.findModeRawQueryListIncognito
+  saveQuery(query) {
+    if (0 < query.length) {
+      this.rawQueryList = this.refreshRawQueryList(query, this.rawQueryList);
+      const newSetting = {}; newSetting[this.key] = this.rawQueryList;
+      this.storage.set(newSetting);
+      // If there are any active incognito-mode tabs, then propagte this query to those tabs too.
+      if (!this.isIncognitoMode) {
+        return this.storage.get("findModeRawQueryListIncognito", items => {
+          if (!chrome.runtime.lastError && items.findModeRawQueryListIncognito) {
+            return this.storage.set({
+              findModeRawQueryListIncognito: this.refreshRawQueryList(query, items.findModeRawQueryListIncognito)});
+          }
+        });
+      }
+    }
+  },
 
-  refreshRawQueryList: (query, rawQueryList) ->
-    ([ query ].concat rawQueryList.filter (q) => q != query)[0..@max]
+  refreshRawQueryList(query, rawQueryList) {
+    return ([ query ].concat(rawQueryList.filter(q => q !== query))).slice(0, +this.max + 1 || undefined);
+  }
+};
 
-root = exports ? (window.root ?= {})
-root.FindModeHistory = FindModeHistory
-extend window, root unless exports?
+const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));
+root.FindModeHistory = FindModeHistory;
+if (typeof exports === 'undefined' || exports === null) { extend(window, root); }

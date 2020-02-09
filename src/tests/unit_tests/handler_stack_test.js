@@ -1,77 +1,93 @@
-require "./test_helper.js"
-extend(global, require "../../lib/handler_stack.js")
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+require("./test_helper.js");
+extend(global, require("../../lib/handler_stack.js"));
 
-context "handlerStack",
-  setup ->
-    stub global, "DomUtils", {}
-    stub DomUtils, "consumeKeyup", ->
-    stub DomUtils, "suppressEvent", ->
-    stub DomUtils, "suppressPropagation", ->
-    @handlerStack = new HandlerStack
-    @handler1Called = false
-    @handler2Called = false
+context("handlerStack",
+  setup(function() {
+    stub(global, "DomUtils", {});
+    stub(DomUtils, "consumeKeyup", function() {});
+    stub(DomUtils, "suppressEvent", function() {});
+    stub(DomUtils, "suppressPropagation", function() {});
+    this.handlerStack = new HandlerStack;
+    this.handler1Called = false;
+    return this.handler2Called = false;
+  }),
 
-  should "bubble events", ->
-    @handlerStack.push { keydown: => @handler1Called = true }
-    @handlerStack.push { keydown: => @handler2Called = true }
-    @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler2Called
-    assert.isTrue @handler1Called
+  should("bubble events", function() {
+    this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    this.handlerStack.push({ keydown: () => { return this.handler2Called = true; } });
+    this.handlerStack.bubbleEvent('keydown', {});
+    assert.isTrue(this.handler2Called);
+    return assert.isTrue(this.handler1Called);
+  }),
 
-  should "terminate bubbling on falsy return value", ->
-    @handlerStack.push { keydown: => @handler1Called = true }
-    @handlerStack.push { keydown: => @handler2Called = true; false }
-    @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler2Called
-    assert.isFalse @handler1Called
+  should("terminate bubbling on falsy return value", function() {
+    this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    this.handlerStack.push({ keydown: () => { this.handler2Called = true; return false; } });
+    this.handlerStack.bubbleEvent('keydown', {});
+    assert.isTrue(this.handler2Called);
+    return assert.isFalse(this.handler1Called);
+  }),
 
-  should "terminate bubbling on passEventToPage, and be true", ->
-    @handlerStack.push { keydown: => @handler1Called = true }
-    @handlerStack.push { keydown: => @handler2Called = true; @handlerStack.passEventToPage }
-    assert.isTrue @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler2Called
-    assert.isFalse @handler1Called
+  should("terminate bubbling on passEventToPage, and be true", function() {
+    this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    this.handlerStack.push({ keydown: () => { this.handler2Called = true; return this.handlerStack.passEventToPage; } });
+    assert.isTrue(this.handlerStack.bubbleEvent('keydown', {}));
+    assert.isTrue(this.handler2Called);
+    return assert.isFalse(this.handler1Called);
+  }),
 
-  should "terminate bubbling on passEventToPage, and be false", ->
-    @handlerStack.push { keydown: => @handler1Called = true }
-    @handlerStack.push { keydown: => @handler2Called = true; @handlerStack.suppressPropagation }
-    assert.isFalse @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler2Called
-    assert.isFalse @handler1Called
+  should("terminate bubbling on passEventToPage, and be false", function() {
+    this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    this.handlerStack.push({ keydown: () => { this.handler2Called = true; return this.handlerStack.suppressPropagation; } });
+    assert.isFalse(this.handlerStack.bubbleEvent('keydown', {}));
+    assert.isTrue(this.handler2Called);
+    return assert.isFalse(this.handler1Called);
+  }),
 
-  should "restart bubbling on restartBubbling", ->
-    @handler1Called = 0
-    @handler2Called = 0
-    id = @handlerStack.push { keydown: => @handler1Called++; @handlerStack.remove(id); @handlerStack.restartBubbling }
-    @handlerStack.push { keydown: => @handler2Called++; true  }
-    assert.isTrue @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler1Called == 1
-    assert.isTrue @handler2Called == 2
+  should("restart bubbling on restartBubbling", function() {
+    this.handler1Called = 0;
+    this.handler2Called = 0;
+    var id = this.handlerStack.push({ keydown: () => { this.handler1Called++; this.handlerStack.remove(id); return this.handlerStack.restartBubbling; } });
+    this.handlerStack.push({ keydown: () => { this.handler2Called++; return true; }  });
+    assert.isTrue(this.handlerStack.bubbleEvent('keydown', {}));
+    assert.isTrue(this.handler1Called === 1);
+    return assert.isTrue(this.handler2Called === 2);
+  }),
 
-  should "remove handlers correctly", ->
-    @handlerStack.push { keydown: => @handler1Called = true }
-    handlerId = @handlerStack.push { keydown: => @handler2Called = true }
-    @handlerStack.remove handlerId
-    @handlerStack.bubbleEvent 'keydown', {}
-    assert.isFalse @handler2Called
-    assert.isTrue @handler1Called
+  should("remove handlers correctly", function() {
+    this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    const handlerId = this.handlerStack.push({ keydown: () => { return this.handler2Called = true; } });
+    this.handlerStack.remove(handlerId);
+    this.handlerStack.bubbleEvent('keydown', {});
+    assert.isFalse(this.handler2Called);
+    return assert.isTrue(this.handler1Called);
+  }),
 
-  should "remove handlers correctly", ->
-    handlerId = @handlerStack.push { keydown: => @handler1Called = true }
-    @handlerStack.push { keydown: => @handler2Called = true }
-    @handlerStack.remove handlerId
-    @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler2Called
-    assert.isFalse @handler1Called
+  should("remove handlers correctly", function() {
+    const handlerId = this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    this.handlerStack.push({ keydown: () => { return this.handler2Called = true; } });
+    this.handlerStack.remove(handlerId);
+    this.handlerStack.bubbleEvent('keydown', {});
+    assert.isTrue(this.handler2Called);
+    return assert.isFalse(this.handler1Called);
+  }),
 
-  should "handle self-removing handlers correctly", ->
-    ctx = this
-    @handlerStack.push { keydown: => @handler1Called = true }
-    @handlerStack.push { keydown: ->
-      ctx.handler2Called = true
-      @remove()
+  should("handle self-removing handlers correctly", function() {
+    const ctx = this;
+    this.handlerStack.push({ keydown: () => { return this.handler1Called = true; } });
+    this.handlerStack.push({ keydown() {
+      ctx.handler2Called = true;
+      return this.remove();
     }
-    @handlerStack.bubbleEvent 'keydown', {}
-    assert.isTrue @handler2Called
-    assert.isTrue @handler1Called
-    assert.equal @handlerStack.stack.length, 1
+    });
+    this.handlerStack.bubbleEvent('keydown', {});
+    assert.isTrue(this.handler2Called);
+    assert.isTrue(this.handler1Called);
+    return assert.equal(this.handlerStack.stack.length, 1);
+  })
+);

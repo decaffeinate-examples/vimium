@@ -1,86 +1,136 @@
+/*
+ * decaffeinate suggestions:
+ * DS001: Remove Babel/TypeScript constructor workaround
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS104: Avoid inline assignments
+ * DS204: Change includes calls to have a more natural evaluation order
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
 
-class InsertMode extends Mode
-  constructor: (options = {}) ->
-    # There is one permanently-installed instance of InsertMode.  It tracks focus changes and
-    # activates/deactivates itself (by setting @insertModeLock) accordingly.
-    @permanent = options.permanent
+class InsertMode extends Mode {
+  static initClass() {
+  
+    // Static stuff. This allows PostFindMode to suppress the permanently-installed InsertMode instance.
+    this.suppressedEvent = null;
+  }
+  constructor(options) {
+    // There is one permanently-installed instance of InsertMode.  It tracks focus changes and
+    // activates/deactivates itself (by setting @insertModeLock) accordingly.
+    {
+      // Hack: trick Babel/TypeScript into allowing this before super.
+      if (false) { super(); }
+      let thisFn = (() => { return this; }).toString();
+      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
+      eval(`${thisName} = this;`);
+    }
+    if (options == null) { options = {}; }
+    this.permanent = options.permanent;
 
-    # If truthy, then we were activated by the user (with "i").
-    @global = options.global
+    // If truthy, then we were activated by the user (with "i").
+    this.global = options.global;
 
-    handleKeyEvent = (event) =>
-      return @continueBubbling unless @isActive event
+    const handleKeyEvent = event => {
+      let needle;
+      if (!this.isActive(event)) { return this.continueBubbling; }
 
-      # See comment here: https://github.com/philc/vimium/commit/48c169bd5a61685bb4e67b1e76c939dbf360a658.
-      activeElement = @getActiveElement()
-      return @passEventToPage if activeElement == document.body and activeElement.isContentEditable
+      // See comment here: https://github.com/philc/vimium/commit/48c169bd5a61685bb4e67b1e76c939dbf360a658.
+      const activeElement = this.getActiveElement();
+      if ((activeElement === document.body) && activeElement.isContentEditable) { return this.passEventToPage; }
 
-      # Check for a pass-next-key key.
-      if KeyboardUtils.getKeyCharString(event) in Settings.get "passNextKeyKeys"
-        new PassNextKeyMode
+      // Check for a pass-next-key key.
+      if ((needle = KeyboardUtils.getKeyCharString(event), Array.from(Settings.get("passNextKeyKeys")).includes(needle))) {
+        new PassNextKeyMode;
 
-      else if event.type == 'keydown' and KeyboardUtils.isEscape(event)
-        activeElement.blur() if DomUtils.isFocusable activeElement
-        @exit() unless @permanent
+      } else if ((event.type === 'keydown') && KeyboardUtils.isEscape(event)) {
+        if (DomUtils.isFocusable(activeElement)) { activeElement.blur(); }
+        if (!this.permanent) { this.exit(); }
 
-      else
-        return @passEventToPage
+      } else {
+        return this.passEventToPage;
+      }
 
-      return @suppressEvent
+      return this.suppressEvent;
+    };
 
-    defaults =
-      name: "insert"
-      indicator: if not @permanent and not Settings.get "hideHud"  then "Insert mode"
-      keypress: handleKeyEvent
+    const defaults = {
+      name: "insert",
+      indicator: !this.permanent && !Settings.get("hideHud")  ? "Insert mode" : undefined,
+      keypress: handleKeyEvent,
       keydown: handleKeyEvent
+    };
 
-    super extend defaults, options
+    super(extend(defaults, options));
 
-    # Only for tests.  This gives us a hook to test the status of the permanently-installed instance.
-    InsertMode.permanentInstance = this if @permanent
+    // Only for tests.  This gives us a hook to test the status of the permanently-installed instance.
+    if (this.permanent) { InsertMode.permanentInstance = this; }
+  }
 
-  isActive: (event) ->
-    return false if event == InsertMode.suppressedEvent
-    return true if @global
-    DomUtils.isFocusable @getActiveElement()
+  isActive(event) {
+    if (event === InsertMode.suppressedEvent) { return false; }
+    if (this.global) { return true; }
+    return DomUtils.isFocusable(this.getActiveElement());
+  }
 
-  getActiveElement: ->
-    activeElement = document.activeElement
-    while activeElement?.shadowRoot?.activeElement
-      activeElement = activeElement.shadowRoot.activeElement
-    activeElement
+  getActiveElement() {
+    let {
+      activeElement
+    } = document;
+    while (__guard__(activeElement != null ? activeElement.shadowRoot : undefined, x => x.activeElement)) {
+      ({
+        activeElement
+      } = activeElement.shadowRoot);
+    }
+    return activeElement;
+  }
+  static suppressEvent(event) { return this.suppressedEvent = event; }
+}
+InsertMode.initClass();
 
-  # Static stuff. This allows PostFindMode to suppress the permanently-installed InsertMode instance.
-  @suppressedEvent: null
-  @suppressEvent: (event) -> @suppressedEvent = event
+// This implements the pasNexKey command.
+class PassNextKeyMode extends Mode {
+  constructor(count) {
+    if (count == null) { count = 1; }
+    let seenKeyDown = false;
+    let keyDownCount = 0;
 
-# This implements the pasNexKey command.
-class PassNextKeyMode extends Mode
-  constructor: (count = 1) ->
-    seenKeyDown = false
-    keyDownCount = 0
+    super({
+      name: "pass-next-key",
+      indicator: "Pass next key.",
+      // We exit on blur because, once we lose the focus, we can no longer track key events.
+      exitOnBlur: window,
+      keypress: () => {
+        return this.passEventToPage;
+      },
 
-    super
-      name: "pass-next-key"
-      indicator: "Pass next key."
-      # We exit on blur because, once we lose the focus, we can no longer track key events.
-      exitOnBlur: window
-      keypress: =>
-        @passEventToPage
+      keydown: () => {
+        seenKeyDown = true;
+        keyDownCount += 1;
+        return this.passEventToPage;
+      },
 
-      keydown: =>
-        seenKeyDown = true
-        keyDownCount += 1
-        @passEventToPage
+      keyup: () => {
+        if (seenKeyDown) {
+          if (!(0 < --keyDownCount)) {
+            if (!(0 < --count)) {
+              this.exit();
+            }
+          }
+        }
+        return this.passEventToPage;
+      }
+    });
+  }
+}
 
-      keyup: =>
-        if seenKeyDown
-          unless 0 < --keyDownCount
-            unless 0 < --count
-              @exit()
-        @passEventToPage
+const root = typeof exports !== 'undefined' && exports !== null ? exports : (window.root != null ? window.root : (window.root = {}));
+root.InsertMode = InsertMode;
+root.PassNextKeyMode = PassNextKeyMode;
+if (typeof exports === 'undefined' || exports === null) { extend(window, root); }
 
-root = exports ? (window.root ?= {})
-root.InsertMode = InsertMode
-root.PassNextKeyMode = PassNextKeyMode
-extend window, root unless exports?
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}
